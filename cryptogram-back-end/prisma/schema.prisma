@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  UserId       String        @id @default(cuid())
+  UserName     String
+  AvatarPath   String        @default("/uploads/avatars/default-avatar.png")
+  Login        String        @unique
+  Email        String        @unique
+  Role         Int           @default(1)
+  PasswordHash String
+  CreatedAt    DateTime      @default(now())
+  UpdatedAt    DateTime      @default(now()) @updatedAt
+  UserMessages Messages[]
+  ChatMembers  ChatMembers[]
+}
+
+model Chats {
+  ChatId       Int           @id @default(autoincrement())
+  ChatName     String
+  IsGroup      Boolean
+  KeyHash      String
+  CreatedAt    DateTime      @default(now())
+  UpdatedAt    DateTime      @default(now()) @updatedAt
+  ChatMessages Messages[]
+  ChatMembers  ChatMembers[]
+}
+
+model Messages {
+  MessageId   Int      @id @default(autoincrement())
+  ChatId      Int
+  SenderId    String
+  Chat        Chats    @relation(fields: [ChatId], references: [ChatId])
+  Sender      Users    @relation(fields: [SenderId], references: [UserId])
+  Content     String
+  MessageType String
+  IsUpdate    Boolean  @default(false)
+  IsRead      Boolean  @default(false)
+  CreatedAt   DateTime @default(now())
+  UpdatedAt   DateTime @default(now()) @updatedAt
+}
+
+model ChatMembers {
+  ChatMemberId Int      @id @default(autoincrement())
+  ChatId       Int
+  UserId       String
+  Chat         Chats    @relation(fields: [ChatId], references: [ChatId])
+  Member       Users    @relation(fields: [UserId], references: [UserId])
+  Role         Int
+  IsFixed      Boolean
+  JoinedAt     DateTime @default(now())
+}
+
+model StickerGroup {
+  StickerGroupId Int        @id @default(autoincrement())
+  GroupName      String
+  Stickers       Stickers[]
+}
+
+model Stickers {
+  StickerId      Int          @id @default(autoincrement())
+  StickerGroupId Int
+  StickerGroup   StickerGroup @relation(fields: [StickerGroupId], references: [StickerGroupId])
+}
