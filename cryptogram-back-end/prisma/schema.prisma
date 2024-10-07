@@ -9,9 +9,9 @@ datasource db {
 
 model Users {
   UserId       String        @id @default(cuid())
-  UserName     String
+  Name         String
   AvatarPath   String        @default("/uploads/avatars/default-avatar.png")
-  Login        String        @unique
+  UserName     String        @unique
   Email        String        @unique
   Role         Int           @default(1)
   PasswordHash String
