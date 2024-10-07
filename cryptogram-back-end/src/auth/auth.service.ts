@@ -22,6 +22,9 @@ export class AuthService {
 
         if (result.error) throw new BadRequestException(result);
 
+        if (dto.password != dto.repeatPassword)
+            throw new BadRequestException({ message: 'passwords must match' });
+
         const user = await this.prisma.users.create({
             data: {
                 UserName: dto.username,

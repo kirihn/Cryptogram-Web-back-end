@@ -31,9 +31,9 @@ export class ProfileController {
         return this.profileService.GetProfile(userId.userId);
     }
 
-    @UsePipes(new ValidationPipe())
-    @HttpCode(200)
-    @Auth()
-    @Put(updateProfile)
-    async(@Body() userData: UpdateProfileDto)
+    // @UsePipes(new ValidationPipe())
+    // @HttpCode(200)
+    // @Auth()
+    // @Put(updateProfile)
+    // async(@Body() userData: UpdateProfileDto)
 }
