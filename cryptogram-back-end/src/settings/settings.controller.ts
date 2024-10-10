@@ -7,31 +7,23 @@ import {
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
-import { ProfileService } from './profile.service';
+import { SettingsService } from './settings.service';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { Auth } from 'src/decorators/auth.decorator';
-import { UserIdDto } from './dto/userId.dto';
 import { UpdateNameDto } from './dto/updateName.dto';
 import { UpdateUserNameDto } from './dto/updateUserName.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
+import { UpdateLanguageDto } from './dto/updateLanguage.dto';
 
-@Controller('profile')
-export class ProfileController {
-    constructor(private readonly profileService: ProfileService) {}
+@Controller('settings')
+export class SettingsController {
+    constructor(private readonly profileService: SettingsService) {}
 
     @HttpCode(200)
     @Auth()
     @Get('getMyProfile')
     async GetMyProfile(@CurrentUser('UserId') userId: string) {
         return this.profileService.GetProfile(userId);
-    }
-
-    @UsePipes(new ValidationPipe())
-    @HttpCode(200)
-    @Auth()
-    @Get('getUserProfile')
-    async GetUserProfile(@Body() userId: UserIdDto) {
-        return this.profileService.GetProfile(userId.userId);
     }
 
     @UsePipes(new ValidationPipe())
@@ -54,6 +46,17 @@ export class ProfileController {
         @CurrentUser('UserId') userId: string,
     ) {
         return this.profileService.UpdateUserName(dto, userId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @HttpCode(200)
+    @Auth()
+    @Put('updateLanguage')
+    async UpdateLanguage(
+        @Body() dto: UpdateLanguageDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.profileService.UpdateLanguage(dto, userId);
     }
 
     @UsePipes(new ValidationPipe())
