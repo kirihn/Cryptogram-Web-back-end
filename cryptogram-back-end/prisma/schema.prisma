@@ -13,6 +13,7 @@ model Users {
   AvatarPath   String        @default("/uploads/avatars/default-avatar.png")
   UserName     String        @unique
   Email        String        @unique
+  Language     String        @default("ru")
   Role         Int           @default(1)
   PasswordHash String
   CreatedAt    DateTime      @default(now())
