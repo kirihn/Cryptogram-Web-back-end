@@ -2,7 +2,6 @@ import {
     Body,
     Controller,
     Get,
-    HttpCode,
     Put,
     UploadedFile,
     UseInterceptors,
@@ -22,7 +21,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class SettingsController {
     constructor(private readonly profileService: SettingsService) {}
 
-    @HttpCode(200)
     @Auth()
     @Get('getMyProfile')
     async GetMyProfile(@CurrentUser('UserId') userId: string) {
@@ -30,7 +28,6 @@ export class SettingsController {
     }
 
     @UsePipes(new ValidationPipe())
-    @HttpCode(200)
     @Auth()
     @Put('updateName')
     async UpdateName(
@@ -41,7 +38,6 @@ export class SettingsController {
     }
 
     @UsePipes(new ValidationPipe())
-    @HttpCode(200)
     @Auth()
     @Put('updateUserName')
     async UpdateUserName(
@@ -52,7 +48,6 @@ export class SettingsController {
     }
 
     @UsePipes(new ValidationPipe())
-    @HttpCode(200)
     @Auth()
     @Put('updateLanguage')
     async UpdateLanguage(
@@ -63,7 +58,6 @@ export class SettingsController {
     }
 
     @UsePipes(new ValidationPipe())
-    @HttpCode(200)
     @Auth()
     @Put('updatePassword')
     async UpdatePassword(
@@ -74,7 +68,6 @@ export class SettingsController {
     }
 
     @UsePipes(new ValidationPipe())
-    @HttpCode(200)
     @Auth()
     @Put('updateAvatar')
     @UseInterceptors(FileInterceptor('Avatar'))

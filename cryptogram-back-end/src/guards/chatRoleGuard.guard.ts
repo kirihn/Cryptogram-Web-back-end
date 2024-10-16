@@ -5,9 +5,8 @@ import {
     Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AddMemberDto } from 'src/chat/dto/addMember.dto';
 import { PrismaService } from 'src/prisma.servise';
-
+// сделать свою дтошку с опциональными полями
 @Injectable()
 export class ChatRoleGuard implements CanActivate {
     constructor(
@@ -27,15 +26,15 @@ export class ChatRoleGuard implements CanActivate {
         const user = request.user;
         const userId: string = user.UserId;
 
-        const dto: AddMemberDto = request.body;
+        const chatId = request.body.chatId;
 
-        if (!dto.chatId || !user)
+        if (!chatId || !user)
             throw new ForbiddenException('user or chatId is missing');
 
         const memberRole = await this.prisma.chatMembers.findFirst({
             where: {
                 UserId: userId,
-                ChatId: dto.chatId,
+                ChatId: chatId,
             },
             select: {
                 Role: true,
@@ -43,7 +42,10 @@ export class ChatRoleGuard implements CanActivate {
         });
 
         if (!memberRole) {
-            throw new ForbiddenException('User is not a member of this chat');
+            throw new ForbiddenException({
+                error: true,
+                message: 'You are not a member of this chat',
+            });
         }
 
         const hasRole = roles.includes(memberRole.Role);

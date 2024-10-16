@@ -33,7 +33,7 @@ export class ChatController {
     @UsePipes(new ValidationPipe())
     @HttpCode(200)
     @Post('AddMember')
-    @CheckChatRole(1)
+    @CheckChatRole(1, 2, 3)
     @Auth()
     AddMember(
         @Body() dto: AddMemberDto,

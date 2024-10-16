@@ -9,6 +9,7 @@ import { hash, verify } from 'argon2';
 @Injectable()
 export class SettingsService {
     constructor(private prisma: PrismaService) {}
+
     async GetProfile(userId: string) {
         const user = await this.prisma.users.findUnique({
             where: { UserId: userId },
@@ -74,6 +75,7 @@ export class SettingsService {
 
         return user;
     }
+
     async GetPasswordVerification(dto: UpdatePasswordDto, userId: string) {
         const userPasswordHash = await this.prisma.users.findUnique({
             where: {

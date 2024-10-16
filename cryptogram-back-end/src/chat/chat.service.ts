@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+} from '@nestjs/common';
 import { CreateChatDto } from './dto/createChat.dto';
 import { PrismaService } from 'src/prisma.servise';
 import { AddMemberDto } from './dto/addMember.dto';
@@ -31,7 +35,16 @@ export class ChatService {
     }
 
     async AddMember(dto: AddMemberDto, userId: string) {
-        return `This action returns all chat` + dto + userId;
+        await this.ValidateAddMember(dto, userId);
+
+        const NewMember = await this.prisma.chatMembers.create({
+            data: {
+                ChatId: dto.chatId,
+                UserId: dto.userId,
+                Role: dto.role,
+            },
+        });
+        return NewMember;
     }
 
     findOne(id: number) {
@@ -40,5 +53,48 @@ export class ChatService {
 
     remove(id: number) {
         return `This action removes a #${id} chat`;
+    }
+
+    async ValidateAddMember(dto: AddMemberDto, userId: string) {
+        const member = await this.prisma.chatMembers.findFirst({
+            where: {
+                UserId: userId,
+                ChatId: dto.chatId,
+            },
+            select: {
+                Role: true,
+            },
+        });
+
+        if (member.Role > dto.role)
+            throw new ForbiddenException({
+                error: true,
+                message: 'You cannot grant roles larger than yours',
+            });
+
+        const isNewMember = await this.prisma.chatMembers.findFirst({
+            where: {
+                ChatId: dto.chatId,
+                UserId: dto.userId,
+            },
+        });
+
+        if (isNewMember)
+            throw new BadRequestException({
+                error: true,
+                message: 'This user is already a member of the chat',
+            });
+
+        const isNewMemberExist = await this.prisma.users.findUnique({
+            where: {
+                UserId: dto.userId,
+            },
+        });
+
+        if (!isNewMemberExist)
+            throw new ForbiddenException({
+                error: true,
+                message: 'This user does not exist',
+            });
     }
 }
