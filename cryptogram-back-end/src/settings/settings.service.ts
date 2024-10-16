@@ -63,6 +63,17 @@ export class SettingsService {
         return user;
     }
 
+    async UpdateAvatar(file: Express.Multer.File, userId: string) {
+        const newPath = '/uploads/avatars' + userId + '.png'; // добавить все проверки и расширение файла.
+        const user = await this.prisma.users.update({
+            where: { UserId: userId },
+            data: {
+                AvatarPath: newPath,
+            },
+        });
+
+        return user;
+    }
     async GetPasswordVerification(dto: UpdatePasswordDto, userId: string) {
         const userPasswordHash = await this.prisma.users.findUnique({
             where: {

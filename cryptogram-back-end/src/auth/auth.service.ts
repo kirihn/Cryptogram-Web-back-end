@@ -18,12 +18,15 @@ export class AuthService {
     ) {}
 
     async register(dto: RegisterDto) {
-        const result = await this.CheckUserExists(dto);
+        const userExist = await this.CheckUserExists(dto);
 
-        if (result.error) throw new BadRequestException(result);
+        if (userExist.error) throw new BadRequestException(userExist);
 
         if (dto.password != dto.repeatPassword)
-            throw new BadRequestException({ message: 'passwords must match' });
+            throw new BadRequestException({
+                error: true,
+                message: 'passwords must match',
+            });
 
         const user = await this.prisma.users.create({
             data: {
@@ -57,17 +60,24 @@ export class AuthService {
             },
         });
 
-        if (!oldUser) {
-            return { error: false };
-        }
+        if (!oldUser) return { error: false };
 
-        if (oldUser.Email === dto.email) {
-            return { error: true, message: 'Email alredy exist' };
-        } else if (oldUser.UserName === dto.username) {
-            return { error: true, message: 'username alredy exist' };
-        }
+        if (oldUser.Email === dto.email)
+            throw new BadRequestException({
+                error: true,
+                message: 'Email alredy exist',
+            });
 
-        return { error: true, message: 'Such user alredy exist' };
+        if (oldUser.UserName === dto.username)
+            throw new BadRequestException({
+                error: true,
+                message: 'username alredy exist',
+            });
+
+        throw new BadRequestException({
+            error: true,
+            message: 'Such user alredy exist',
+        });
     }
 
     private async IssueTokens(userId: string) {

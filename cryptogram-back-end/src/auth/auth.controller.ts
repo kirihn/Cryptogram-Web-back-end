@@ -6,13 +6,11 @@ import {
     ValidationPipe,
     Body,
     Res,
-    Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 import { Response } from 'express';
-import { Auth } from 'src/decorators/auth.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -60,12 +58,5 @@ export class AuthController {
         });
 
         return res.send(user);
-    }
-
-    @Auth()
-    @Get('testAuth')
-    @HttpCode(200)
-    async TestAuth() {
-        return 'successfull';
     }
 }

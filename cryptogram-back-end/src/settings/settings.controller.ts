@@ -4,6 +4,8 @@ import {
     Get,
     HttpCode,
     Put,
+    UploadedFile,
+    UseInterceptors,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
@@ -14,6 +16,7 @@ import { UpdateNameDto } from './dto/updateName.dto';
 import { UpdateUserNameDto } from './dto/updateUserName.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UpdateLanguageDto } from './dto/updateLanguage.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('settings')
 export class SettingsController {
@@ -68,5 +71,17 @@ export class SettingsController {
         @CurrentUser('UserId') userId: string,
     ) {
         return this.profileService.UpdatePassword(dto, userId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @HttpCode(200)
+    @Auth()
+    @Put('updateAvatar')
+    @UseInterceptors(FileInterceptor('Avatar'))
+    async UpdateAvatar(
+        @UploadedFile() file: Express.Multer.File,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.profileService.UpdateAvatar(file, userId);
     }
 }

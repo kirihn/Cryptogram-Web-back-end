@@ -54,7 +54,7 @@ model ChatMembers {
   Chat         Chats    @relation(fields: [ChatId], references: [ChatId])
   Member       Users    @relation(fields: [UserId], references: [UserId])
   Role         Int
-  IsFixed      Boolean
+  IsFixed      Boolean  @default(false)
   JoinedAt     DateTime @default(now())
 }
 

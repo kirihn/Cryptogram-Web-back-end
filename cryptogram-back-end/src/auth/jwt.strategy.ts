@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
@@ -12,7 +12,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         private prisma: PrismaService,
     ) {
         super({
-            //jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             jwtFromRequest: ExtractJwt.fromExtractors([
                 (req: Request) => {
                     return req.cookies['accessToken'];
@@ -27,6 +26,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             throw new Error('Invalid token: userId is missing');
         }
 
-        return this.prisma.users.findUnique({ where: { UserId: userId } });
+        const user = await this.prisma.users.findUnique({
+            where: { UserId: userId },
+        });
+
+        if (!user) {
+            throw new UnauthorizedException();
+        }
+        return user;
     }
 }
