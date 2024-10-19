@@ -1,12 +1,12 @@
 import {
     Controller,
-    Get,
     Post,
     Body,
     Delete,
     ValidationPipe,
     UsePipes,
-    HttpCode,
+    Get,
+    Put,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/createChat.dto';
@@ -14,13 +14,14 @@ import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { Auth } from 'src/decorators/auth.decorator';
 import { AddMemberDto } from './dto/addMember.dto';
 import { CheckChatRole } from 'src/decorators/CheckChatRole.decorator';
+import { DeleteMember } from './dto/deleteMember.dto';
+import { FixChatDto } from './dto/fixChat.dto';
 
 @Controller('chat')
 export class ChatController {
     constructor(private readonly chatService: ChatService) {}
 
     @UsePipes(new ValidationPipe())
-    @HttpCode(200)
     @Auth()
     @Post('createChat')
     async Create(
@@ -31,7 +32,6 @@ export class ChatController {
     }
 
     @UsePipes(new ValidationPipe())
-    @HttpCode(200)
     @Post('AddMember')
     @CheckChatRole(1, 2, 3)
     @Auth()
@@ -42,13 +42,27 @@ export class ChatController {
         return this.chatService.AddMember(dto, userId);
     }
 
-    @Get('id')
-    findOne() {
-        return this.chatService.findOne(6);
+    @UsePipes(new ValidationPipe())
+    @Delete('deleteMember')
+    @CheckChatRole(1, 2)
+    @Auth()
+    DeleteMember(
+        @Body() dto: DeleteMember,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.chatService.DeleteMember(dto, userId);
     }
 
-    @Delete('id')
-    remove() {
-        return this.chatService.remove(6);
+    @Get('getMyChats')
+    @Auth()
+    GetMyChats(@CurrentUser('UserId') userId: string) {
+        return this.chatService.GetMyChats(userId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Auth()
+    @Put('fixChat')
+    FixChat(@Body() dto: FixChatDto, @CurrentUser('UserId') userId: string) {
+        return this.chatService.FixChat(dto, userId);
     }
 }

@@ -14,8 +14,8 @@ export class AddMemberDto {
 
     @IsNumber()
     @IsNotEmpty()
-    @IsIn([0, 1, 2, 3, 4, 5], {
-        message: 'The Role must be one of the following: 1, 2, 3, 4, 5',
+    @IsIn([2, 3, 4, 5], {
+        message: 'The Role must be one of the following: 2, 3, 4, 5',
     })
     role: number;
 
