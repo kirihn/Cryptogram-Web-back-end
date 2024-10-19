@@ -101,10 +101,7 @@ export class ChatService {
                     },
                 });
 
-                console.log(coutMembers);
-
                 if (coutMembers === 0) {
-                    console.log('QQEWQWE');
                     await prisma.chats.delete({
                         where: {
                             ChatId: member.ChatId,
@@ -113,7 +110,7 @@ export class ChatService {
                 }
             })
             .catch((err) => {
-                console.log(err);
+                throw new BadRequestException({ error: true, message: err });
             });
 
         return 'You leave from this chat';
