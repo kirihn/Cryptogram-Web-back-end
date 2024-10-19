@@ -8,6 +8,8 @@ import { PrismaService } from 'src/prisma.servise';
 import { AddMemberDto } from './dto/addMember.dto';
 import { DeleteMember } from './dto/deleteMember.dto';
 import { FixChatDto } from './dto/fixChat.dto';
+import { GetChatInfoDto } from './dto/getChatInfo.dto';
+import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 
 @Injectable()
 export class ChatService {
@@ -22,13 +24,30 @@ export class ChatService {
                 },
             });
 
-            await prisma.chatMembers.create({
-                data: {
-                    UserId: userId,
-                    ChatId: chat.ChatId,
-                    Role: 1,
-                },
-            });
+            if (dto.isGroup) {
+                await prisma.chatMembers.create({
+                    data: {
+                        UserId: userId,
+                        ChatId: chat.ChatId,
+                        Role: 1,
+                    },
+                });
+            } else {
+                await prisma.chatMembers.create({
+                    data: {
+                        UserId: userId,
+                        ChatId: chat.ChatId,
+                        Role: 4,
+                    },
+                });
+                await prisma.chatMembers.create({
+                    data: {
+                        UserId: dto.userId,
+                        ChatId: chat.ChatId,
+                        Role: 4,
+                    },
+                });
+            }
 
             return chat;
         });
@@ -65,6 +84,41 @@ export class ChatService {
         return 'chatMemberDeleted';
     }
 
+    async LeaveFromChat(dto: LeaveFromChatDto, userId: string) {
+        const member = await this.ValidateLeaveFromChat(dto, userId);
+
+        await this.prisma
+            .$transaction(async (prisma) => {
+                await prisma.chatMembers.delete({
+                    where: {
+                        ChatMemberId: member.ChatMemberId,
+                    },
+                });
+
+                const coutMembers = await prisma.chatMembers.count({
+                    where: {
+                        ChatId: member.ChatId,
+                    },
+                });
+
+                console.log(coutMembers);
+
+                if (coutMembers === 0) {
+                    console.log('QQEWQWE');
+                    await prisma.chats.delete({
+                        where: {
+                            ChatId: member.ChatId,
+                        },
+                    });
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+
+        return 'You leave from this chat';
+    }
+
     async GetMyChats(userId: string) {
         return await this.prisma.chatMembers.findMany({
             where: {
@@ -86,6 +140,30 @@ export class ChatService {
         });
     }
 
+    async GetChatInfo(dto: GetChatInfoDto, userId: string) {
+        //await this.ValidateGetChatInfo(dto, userId);
+        const chatInfo = await this.prisma.chats.findFirst({
+            where: {
+                ChatId: dto.chatId,
+                ChatMembers: {
+                    some: {
+                        UserId: userId,
+                    },
+                },
+            },
+            include: {
+                ChatMembers: true,
+            },
+        });
+
+        if (!chatInfo)
+            throw new BadRequestException({
+                error: true,
+                message: 'You are not a member of this chat.',
+            });
+        return chatInfo;
+    }
+
     async FixChat(dto: FixChatDto, userId: string) {
         const isFixed = await this.ValidateFixChat(dto, userId);
 
@@ -100,7 +178,7 @@ export class ChatService {
         return '!Fix chat';
     }
 
-    async ValidateFixChat(dto: FixChatDto, userId: string) {
+    private async ValidateFixChat(dto: FixChatDto, userId: string) {
         const isFixed = await this.prisma.chatMembers.findFirst({
             where: {
                 ChatMemberId: dto.chatMemberId,
@@ -120,7 +198,7 @@ export class ChatService {
         return isFixed.IsFixed;
     }
 
-    async ValidateDeleteMember(dto: DeleteMember, userId: string) {
+    private async ValidateDeleteMember(dto: DeleteMember, userId: string) {
         const members = await this.prisma.chatMembers.findMany({
             where: {
                 ChatId: dto.chatId,
@@ -169,7 +247,7 @@ export class ChatService {
         return deletedMember.ChatMemberId;
     }
 
-    async ValidateAddMember(dto: AddMemberDto, userId: string) {
+    private async ValidateAddMember(dto: AddMemberDto, userId: string) {
         const [member, isNewMember, isNewMemberExist] = await Promise.all([
             this.prisma.chatMembers.findFirst({
                 where: {
@@ -216,5 +294,37 @@ export class ChatService {
                 error: true,
                 message: 'This user does not exist',
             });
+    }
+
+    private async ValidateLeaveFromChat(dto: LeaveFromChatDto, userId: string) {
+        const member = await this.prisma.chatMembers.findFirst({
+            where: {
+                ChatId: dto.chatId,
+                UserId: userId,
+            },
+            select: {
+                ChatId: true,
+                ChatMemberId: true,
+                Chat: {
+                    select: {
+                        IsGroup: true,
+                    },
+                },
+            },
+        });
+
+        if (!member)
+            throw new BadRequestException({
+                error: true,
+                message: 'you are not a member of this chat',
+            });
+
+        if (!member.Chat.IsGroup)
+            throw new BadRequestException({
+                error: true,
+                message: 'you are not leave from personal chat.',
+            });
+
+        return member;
     }
 }

@@ -16,6 +16,8 @@ import { AddMemberDto } from './dto/addMember.dto';
 import { CheckChatRole } from 'src/decorators/CheckChatRole.decorator';
 import { DeleteMember } from './dto/deleteMember.dto';
 import { FixChatDto } from './dto/fixChat.dto';
+import { GetChatInfoDto } from './dto/getChatInfo.dto';
+import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -53,6 +55,16 @@ export class ChatController {
         return this.chatService.DeleteMember(dto, userId);
     }
 
+    @UsePipes(new ValidationPipe())
+    @Delete('leaveFromChat')
+    @Auth()
+    LeaveFromChat(
+        @Body() dto: LeaveFromChatDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.chatService.LeaveFromChat(dto, userId);
+    }
+
     @Get('getMyChats')
     @Auth()
     GetMyChats(@CurrentUser('UserId') userId: string) {
@@ -64,5 +76,15 @@ export class ChatController {
     @Put('fixChat')
     FixChat(@Body() dto: FixChatDto, @CurrentUser('UserId') userId: string) {
         return this.chatService.FixChat(dto, userId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Get('GetChatInfo')
+    @Auth()
+    GetChatInfo(
+        @Body() dto: GetChatInfoDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.chatService.GetChatInfo(dto, userId);
     }
 }
