@@ -6,11 +6,14 @@ import {
     ValidationPipe,
     Body,
     Res,
+    Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 import { Response } from 'express';
+import { Auth } from 'src/decorators/auth.decorator';
+import { CurrentUser } from 'src/decorators/currentUser.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -58,5 +61,12 @@ export class AuthController {
         });
 
         return res.send(user);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Get('/testAuth')
+    @Auth()
+    async TestAuth(@CurrentUser('Email') email: string) {
+        return 'you are auth - ' + email;
     }
 }

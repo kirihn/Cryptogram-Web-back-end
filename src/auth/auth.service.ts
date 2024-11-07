@@ -18,13 +18,12 @@ export class AuthService {
     ) {}
 
     async register(dto: RegisterDto) {
-        const userExist = await this.CheckUserExists(dto);
-
-        if (userExist.error) throw new BadRequestException(userExist);
+        await this.CheckUserExists(dto);
 
         if (dto.password != dto.repeatPassword)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'passwords must match',
             });
 
@@ -60,22 +59,25 @@ export class AuthService {
             },
         });
 
-        if (!oldUser) return { error: false };
+        if (!oldUser) return;
 
         if (oldUser.Email === dto.email)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'Email alredy exist',
             });
 
         if (oldUser.UserName === dto.username)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'username alredy exist',
             });
 
         throw new BadRequestException({
             error: true,
+            show: true,
             message: 'Such user alredy exist',
         });
     }
@@ -83,7 +85,7 @@ export class AuthService {
     private async IssueTokens(userId: string) {
         const data = { userId: userId };
         const accessToken = this.jwt.sign(data, {
-            expiresIn: '1h',
+            expiresIn: '1m',
         });
         const refreshToken = this.jwt.sign(data, {
             expiresIn: '7d',
@@ -108,7 +110,7 @@ export class AuthService {
         if (!user)
             throw new BadRequestException({
                 error: true,
-                message: 'invalid email',
+                message: 'this email is not registered',
             });
 
         const isValid = await verify(user.PasswordHash, dto.password);
@@ -116,6 +118,7 @@ export class AuthService {
         if (!isValid)
             throw new UnauthorizedException({
                 error: true,
+                show: true,
                 message: 'invalid password',
             });
 

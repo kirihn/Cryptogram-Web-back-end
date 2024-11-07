@@ -94,12 +94,14 @@ export class SettingsService {
         if (!isValid)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'invalid oldPassword',
             });
 
         if (dto.password !== dto.repeatPassword)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: "passwords don't match",
             });
     }

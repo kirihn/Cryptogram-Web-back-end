@@ -29,7 +29,10 @@ export class ChatRoleGuard implements CanActivate {
         const chatId = request.body.chatId;
 
         if (!chatId || !user)
-            throw new ForbiddenException('user or chatId is missing');
+            throw new ForbiddenException({
+                error: true,
+                message: 'user or chatId is missing',
+            });
 
         const memberRole = await this.prisma.chatMembers.findFirst({
             where: {
