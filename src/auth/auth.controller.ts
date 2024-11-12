@@ -63,6 +63,24 @@ export class AuthController {
         return res.send(user);
     }
 
+    @Post('/logout')
+    @HttpCode(200)
+    async Logout(@Res() res: Response) {
+        res.cookie('accessToken', '', {
+            httpOnly: false,
+            secure: false, // Рекомендуется для HTTPS
+            sameSite: 'strict', // Защита от CSRF
+        });
+
+        res.cookie('refreshToken', '', {
+            httpOnly: false,
+            secure: false,
+            sameSite: 'strict',
+        });
+
+        return res.send({ message: 'Logout out successfully' });
+    }
+
     @UsePipes(new ValidationPipe())
     @Get('/testAuth')
     @Auth()

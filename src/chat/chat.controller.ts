@@ -30,7 +30,7 @@ export class ChatController {
         @Body() dto: CreateChatDto,
         @CurrentUser('UserId') userId: string,
     ) {
-        return this.chatService.Create(dto, userId);
+        return this.chatService.CreateChat(dto, userId);
     }
 
     @UsePipes(new ValidationPipe())

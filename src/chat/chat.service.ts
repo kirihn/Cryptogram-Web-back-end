@@ -14,7 +14,7 @@ import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 @Injectable()
 export class ChatService {
     constructor(private prisma: PrismaService) {}
-    async Create(dto: CreateChatDto, userId: string) {
+    async CreateChat(dto: CreateChatDto, userId: string) {
         const chat = await this.prisma.$transaction(async (prisma) => {
             const chat = await prisma.chats.create({
                 data: {
