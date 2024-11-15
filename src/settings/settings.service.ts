@@ -26,7 +26,7 @@ export class SettingsService {
             },
         });
 
-        return user;
+        return { newName: user.Name };
     }
 
     async UpdateUserName(dto: UpdateUserNameDto, userId: string) {

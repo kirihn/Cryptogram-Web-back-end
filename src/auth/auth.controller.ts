@@ -78,7 +78,7 @@ export class AuthController {
             sameSite: 'strict',
         });
 
-        return res.send({ message: 'Logout out successfully' });
+        return res.send({ message: 'Logout successfully' });
     }
 
     @UsePipes(new ValidationPipe())
