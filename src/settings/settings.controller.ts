@@ -17,7 +17,7 @@ import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UpdateLanguageDto } from './dto/updateLanguage.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-@Controller('settings')
+@Controller('profile')
 export class SettingsController {
     constructor(private readonly profileService: SettingsService) {}
 
