@@ -33,11 +33,11 @@ export class SettingsService {
         const user = await this.prisma.users.update({
             where: { UserId: userId },
             data: {
-                UserName: dto.userName,
+                UserName: dto.username,
             },
         });
 
-        return user;
+        return { newUsername: user.UserName };
     }
 
     async UpdateLanguage(dto: UpdateLanguageDto, userId: string) {

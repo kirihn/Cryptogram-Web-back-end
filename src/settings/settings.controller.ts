@@ -39,7 +39,7 @@ export class SettingsController {
 
     @UsePipes(new ValidationPipe())
     @Auth()
-    @Put('updateUserName')
+    @Put('updateUsername')
     async UpdateUserName(
         @Body() dto: UpdateUserNameDto,
         @CurrentUser('UserId') userId: string,

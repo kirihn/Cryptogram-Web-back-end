@@ -6,5 +6,5 @@ export class UpdateUserNameDto {
         message:
             'The user name can contain only English letters, numbers, and underscores',
     })
-    userName: string;
+    username: string;
 }
