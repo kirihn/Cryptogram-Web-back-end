@@ -4,6 +4,7 @@ import {
     PipeTransform,
     BadRequestException,
 } from '@nestjs/common';
+import { error } from 'console';
 
 @Injectable()
 export class FileValidationPipe implements PipeTransform {
@@ -16,20 +17,31 @@ export class FileValidationPipe implements PipeTransform {
     }
 
     transform(value: any, metadata: ArgumentMetadata) {
+        console.log(metadata.data);
+        console.log(metadata.metatype);
+        console.log(metadata.type);
+        console.log(metadata);
+
         if (!value || typeof value.size !== 'number' || !value.originalname) {
-            throw new BadRequestException('Файл не найден или имеет некорректный формат.');
+            throw new BadRequestException(
+                'Файл не найден или имеет некорректный формат.',
+            );
         }
 
         if (value.size > this.maxFileSize) {
-            throw new BadRequestException(
-                `Размер файла превышает допустимый лимит ${this.maxFileSize / 1000}KB.`,
-            );
+            throw new BadRequestException({
+                error: true,
+                message: `Размер файла превышает допустимый лимит ${this.maxFileSize / 1000}KB.`,
+                show: true,
+            });
         }
 
         if (!this.allowedFormats.test(value.originalname)) {
-            throw new BadRequestException(
-                `Файл должен быть одного из следующих форматов: ${this.allowedFormats}`,
-            );
+            throw new BadRequestException({
+                error: true,
+                message: `Файл должен быть одного из следующих форматов: ${this.allowedFormats}`,
+                show: true,
+            });
         }
 
         return value;

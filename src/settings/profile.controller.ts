@@ -17,6 +17,7 @@ import { UpdateUserNameDto } from './dto/updateUserName.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UpdateLanguageDto } from './dto/updateLanguage.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FileValidationPipe } from 'src/pipes/FileValidation.pipe';
 
 @Controller('profile')
 export class ProfileController {
@@ -73,7 +74,8 @@ export class ProfileController {
     @Post('uploadAvatar')
     @UseInterceptors(FileInterceptor('avatar'))
     async UpdateAvatar(
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile(new FileValidationPipe(1000, /\.(jpg|jpeg|png|gif)$/i))
+        file: Express.Multer.File,
         @CurrentUser('UserId') userId: string,
     ) {
         return this.profileService.UpdateAvatar(file, userId);
