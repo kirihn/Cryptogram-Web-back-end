@@ -16,12 +16,7 @@ export class FileValidationPipe implements PipeTransform {
         this.allowedFormats = allowedFormats;
     }
 
-    transform(value: any, metadata: ArgumentMetadata) {
-        console.log(metadata.data);
-        console.log(metadata.metatype);
-        console.log(metadata.type);
-        console.log(metadata);
-
+    transform(value: any) {
         if (!value || typeof value.size !== 'number' || !value.originalname) {
             throw new BadRequestException(
                 'Файл не найден или имеет некорректный формат.',
