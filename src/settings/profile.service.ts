@@ -5,9 +5,9 @@ import { UpdateUserNameDto } from './dto/updateUserName.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UpdateLanguageDto } from './dto/updateLanguage.dto';
 import { hash, verify } from 'argon2';
-
+import * as fs from 'fs';
 @Injectable()
-export class SettingsService {
+export class ProfileService {
     constructor(private prisma: PrismaService) {}
 
     async GetProfile(userId: string) {
@@ -65,11 +65,38 @@ export class SettingsService {
     }
 
     async UpdateAvatar(file: Express.Multer.File, userId: string) {
-        const newPath = '/uploads/avatars' + userId + '.png'; // добавить все проверки и расширение файла.
+        const uploadDir = 'static/uploads/UserAvatars';
+
+        if (!fs.existsSync(uploadDir)) {
+            throw new BadRequestException({
+                error: true,
+                show: false,
+                message:
+                    'server upload file error (no static/uploads/UserAvatars Directory)',
+            });
+        }
+
+        const FileType = file.mimetype.substring(
+            file.mimetype.indexOf('/') + 1,
+        );
+        const fileName = 'User-' + userId + '.' + FileType;
+        let filePath = `${uploadDir}/${fileName}`;
+        const StaticAvatarPathUser = '/uploads/UserAvatars/' + fileName;
+
+        try {
+            fs.writeFileSync(filePath, file.buffer);
+            console.log('Аватар нового пользователя загружен при регистрации!');
+        } catch (err) {
+            filePath = 'uploads/default-avatar.png';
+            throw new Error(
+                'Ошибка сохранения аватара при регистрации: ' + err.message,
+            );
+        }
+
         const user = await this.prisma.users.update({
             where: { UserId: userId },
             data: {
-                AvatarPath: newPath,
+                AvatarPath: StaticAvatarPathUser,
             },
         });
 
