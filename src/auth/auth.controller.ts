@@ -23,7 +23,7 @@ export class AuthController {
     @Post('register')
     @HttpCode(200)
     async Register(@Body() dto: RegisterDto, @Res() res: Response) {
-        const { accessToken, refreshToken } =
+        const { accessToken, refreshToken, userId } =
             await this.authService.register(dto);
 
         res.cookie('accessToken', accessToken, {
@@ -38,14 +38,15 @@ export class AuthController {
             sameSite: 'strict',
         });
 
-        return res.send({ message: 'successful' });
+        return res.send({ message: 'successful', myUserId: userId });
     }
 
     @UsePipes(new ValidationPipe())
     @Post('login')
     @HttpCode(200)
     async Login(@Body() dto: AuthDto, @Res() res: Response) {
-        const { accessToken, refreshToken } = await this.authService.login(dto);
+        const { accessToken, refreshToken, userId } =
+            await this.authService.login(dto);
 
         res.cookie('accessToken', accessToken, {
             httpOnly: false,
@@ -59,7 +60,7 @@ export class AuthController {
             sameSite: 'strict', // Защита от CSRF
         });
 
-        return res.send({ message: 'successful' });
+        return res.send({ message: 'successful', myUserId: userId });
     }
 
     @Post('/logout')

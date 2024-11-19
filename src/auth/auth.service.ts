@@ -39,6 +39,7 @@ export class AuthService {
         const tokens = await this.IssueTokens(user.UserId);
         return {
             //user: this.ReturnUserFields(user),
+            userId: user.UserId,
             ...tokens,
         };
     }
@@ -48,6 +49,7 @@ export class AuthService {
         const tokens = await this.IssueTokens(user.UserId);
         return {
             //user: this.ReturnUserFields(user),
+            userId: user.UserId,
             ...tokens,
         };
     }

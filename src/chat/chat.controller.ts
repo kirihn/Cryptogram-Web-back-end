@@ -79,7 +79,7 @@ export class ChatController {
     }
 
     @UsePipes(new ValidationPipe())
-    @Get('GetChatInfo')
+    @Post('GetChatInfo')
     @Auth()
     GetChatInfo(
         @Body() dto: GetChatInfoDto,

@@ -143,7 +143,7 @@ export class ChatService {
     }
 
     async GetChatInfo(dto: GetChatInfoDto, userId: string) {
-        const chatInfo = await this.prisma.chats.findFirst({
+        const chatInfo = await this.prisma.chats.findUnique({
             where: {
                 ChatId: dto.chatId,
                 ChatMembers: {
@@ -152,16 +152,50 @@ export class ChatService {
                     },
                 },
             },
-            include: {
-                ChatMembers: true,
+            select: {
+                ChatId: true,
+                ChatName: true,
+                IsGroup: true,
+                KeyHash: true,
+                CreatedAt: true,
+                UpdatedAt: true,
+                ChatMembers: {
+                    select: {
+                        ChatMemberId: true,
+                        Role: true,
+                        ChatId: true,
+                        JoinedAt: true,
+                        Member: {
+                            select: {
+                                UserId: true,
+                                Name: true,
+                                AvatarPath: true,
+                                UserName: true,
+                            },
+                        },
+                    },
+                },
+                ChatMessages: {
+                    select: {
+                        MessageId: true,
+                        Content: true,
+                        MessageType: true,
+                        IsUpdate: true,
+                        IsRead: true,
+                        CreatedAt: true,
+                        SenderId: true,
+                    },
+                },
             },
         });
 
         if (!chatInfo)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'You are not a member of this chat.',
             });
+
         return chatInfo;
     }
 
