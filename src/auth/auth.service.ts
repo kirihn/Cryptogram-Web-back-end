@@ -38,7 +38,7 @@ export class AuthService {
 
         const tokens = await this.IssueTokens(user.UserId);
         return {
-            user: this.ReturnUserFields(user),
+            //user: this.ReturnUserFields(user),
             ...tokens,
         };
     }
@@ -47,7 +47,7 @@ export class AuthService {
         const user = await this.ValidateUser(dto);
         const tokens = await this.IssueTokens(user.UserId);
         return {
-            user: this.ReturnUserFields(user),
+            //user: this.ReturnUserFields(user),
             ...tokens,
         };
     }

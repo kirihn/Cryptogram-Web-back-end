@@ -117,7 +117,7 @@ export class ChatService {
     }
 
     async GetMyChats(userId: string) {
-        return await this.prisma.chatMembers.findMany({
+        const chats = await this.prisma.chatMembers.findMany({
             where: {
                 UserId: userId,
             },
@@ -135,10 +135,14 @@ export class ChatService {
                 },
             },
         });
+
+        return chats.map(({ Chat, ...rest }) => ({
+            ...rest,
+            ...Chat,
+        }));
     }
 
     async GetChatInfo(dto: GetChatInfoDto, userId: string) {
-        //await this.ValidateGetChatInfo(dto, userId);
         const chatInfo = await this.prisma.chats.findFirst({
             where: {
                 ChatId: dto.chatId,
@@ -172,7 +176,11 @@ export class ChatService {
                 IsFixed: !isFixed,
             },
         });
-        return '!Fix chat';
+        return {
+            message: '!Fix chat',
+            chatMemberId: dto.chatMemberId,
+            status: !isFixed,
+        };
     }
 
     private async ValidateFixChat(dto: FixChatDto, userId: string) {

@@ -65,7 +65,7 @@ export class ChatController {
         return this.chatService.LeaveFromChat(dto, userId);
     }
 
-    @Get('getMyChats')
+    @Get('getMyChatsList')
     @Auth()
     GetMyChats(@CurrentUser('UserId') userId: string) {
         return this.chatService.GetMyChats(userId);

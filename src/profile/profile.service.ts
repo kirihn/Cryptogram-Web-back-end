@@ -81,7 +81,7 @@ export class ProfileService {
         );
         const fileName = 'User-' + userId + '.' + FileType;
         let filePath = `${uploadDir}/${fileName}`;
-        const StaticAvatarPathUser = '/uploads/UserAvatars/' + fileName;
+        const StaticAvatarPathUser = uploadDir + fileName;
 
         try {
             fs.writeFileSync(filePath, file.buffer);

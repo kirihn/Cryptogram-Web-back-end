@@ -22,6 +22,8 @@ model Users {
   ChatMembers  ChatMembers[]
 }
 
+
+
 model Chats {
   ChatId       Int           @id @default(autoincrement())
   ChatName     String
@@ -48,14 +50,14 @@ model Messages {
 }
 
 model ChatMembers {
-  ChatMemberId Int      @id @default(autoincrement())
-  ChatId       Int
   UserId       String
-  Chat         Chats    @relation(fields: [ChatId], references: [ChatId])
-  Member       Users    @relation(fields: [UserId], references: [UserId])
+  ChatMemberId Int      @id @default(autoincrement())
   Role         Int
+  ChatId       Int
   IsFixed      Boolean  @default(false)
   JoinedAt     DateTime @default(now())
+  Chat         Chats    @relation(fields: [ChatId], references: [ChatId])
+  Member       Users    @relation(fields: [UserId], references: [UserId])
 }
 
 model StickerGroup {
