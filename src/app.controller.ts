@@ -9,4 +9,16 @@ export class AppController {
     async getHello() {
         return this.appService.getHello();
     }
+
+    // @Get('*')
+    // serveReactApp(@Res() res: Response) {
+    //     const filePath = join(
+    //         __dirname,
+    //         '..',
+    //         'reactBuild',
+    //         'dist',
+    //         'index.html',
+    //     );
+    //     res.sendFile(filePath); // Отправляем корректный путь
+    // }
 }

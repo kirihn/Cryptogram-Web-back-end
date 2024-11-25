@@ -15,6 +15,10 @@ import { join } from 'path';
             rootPath: join(__dirname, '..', 'static'),
             serveRoot: '/static',
         }),
+        ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '..', 'reactBuild/dist'),
+            //exclude: ['/api*'],
+        }),
         AuthModule,
         ConfigModule.forRoot(),
         SettingsModule,

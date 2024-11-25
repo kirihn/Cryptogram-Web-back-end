@@ -72,8 +72,8 @@ export class ChatController {
     }
 
     @UsePipes(new ValidationPipe())
-    @Auth()
     @Put('fixChat')
+    @Auth()
     FixChat(@Body() dto: FixChatDto, @CurrentUser('UserId') userId: string) {
         return this.chatService.FixChat(dto, userId);
     }
@@ -87,4 +87,10 @@ export class ChatController {
     ) {
         return this.chatService.GetChatInfo(dto, userId);
     }
+
+    @UsePipes(new ValidationPipe())
+    @Post("sendMessage")
+    @CheckChatRole(1,2,3,4)
+    @Auth()
+
 }
