@@ -18,6 +18,7 @@ import { DeleteMember } from './dto/deleteMember.dto';
 import { FixChatDto } from './dto/fixChat.dto';
 import { GetChatInfoDto } from './dto/getChatInfo.dto';
 import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
+import { NewMessageDto } from './dto/chatMessage.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -89,8 +90,13 @@ export class ChatController {
     }
 
     @UsePipes(new ValidationPipe())
-    @Post("sendMessage")
-    @CheckChatRole(1,2,3,4)
+    @Post('sendMessage')
+    @CheckChatRole(1, 2, 3, 4)
     @Auth()
-
+    AddMessage(
+        @CurrentUser('UserId') userId: string,
+        @Body() dto: NewMessageDto,
+    ) {
+        return this.chatService.AddMessage(dto, userId);
+    }
 }
