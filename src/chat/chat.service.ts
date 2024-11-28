@@ -233,13 +233,18 @@ export class ChatService {
                 ChatMembers: {
                     select: {
                         UserId: true,
+                        ChatId: true,
                     },
                 },
             },
         });
 
         chatMembers.ChatMembers.forEach((member) => {
-            this.wsGateway.SendMessageToUser(newMessage, member.UserId);
+            this.wsGateway.SendMessageToUser(
+                newMessage,
+                member.UserId,
+                member.ChatId,
+            );
         });
         return newMessage;
     }

@@ -10,7 +10,7 @@ datasource db {
 model Users {
   UserId       String        @id @default(cuid())
   Name         String
-  AvatarPath   String        @default("/defaults/userAvatars/defaultUserAvatar.jpg")
+  AvatarPath   String        @default("/static/defaults/userAvatars/defaultUserAvatar.jpg")
   UserName     String        @unique
   Email        String        @unique
   Language     String        @default("ru")

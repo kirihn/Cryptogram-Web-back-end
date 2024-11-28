@@ -11,11 +11,18 @@ export class ProfileService {
     constructor(private prisma: PrismaService) {}
 
     async GetProfile(userId: string) {
-        const user = await this.prisma.users.findUnique({
+        const userProfile = await this.prisma.users.findUnique({
             where: { UserId: userId },
+            select: {
+                Name: true,
+                UserName: true,
+                AvatarPath: true,
+                Email: true,
+                Language: true,
+            },
         });
 
-        return user;
+        return userProfile;
     }
 
     async UpdateName(dto: UpdateNameDto, userId: string) {
@@ -81,7 +88,6 @@ export class ProfileService {
         );
         const fileName = 'User-' + userId + '.' + FileType;
         let filePath = `${uploadDir}/${fileName}`;
-        const StaticAvatarPathUser = uploadDir + fileName;
 
         try {
             fs.writeFileSync(filePath, file.buffer);
@@ -96,7 +102,7 @@ export class ProfileService {
         const user = await this.prisma.users.update({
             where: { UserId: userId },
             data: {
-                AvatarPath: StaticAvatarPathUser,
+                AvatarPath: filePath,
             },
         });
 
