@@ -72,14 +72,14 @@ export class ProfileService {
     }
 
     async UpdateAvatar(file: Express.Multer.File, userId: string) {
-        const uploadDir = 'static/uploads/UserAvatars';
+        const uploadDir = 'static/uploads/userAvatars';
 
         if (!fs.existsSync(uploadDir)) {
             throw new BadRequestException({
                 error: true,
                 show: false,
                 message:
-                    'server upload file error (no static/uploads/UserAvatars Directory)',
+                    'server upload file error (no static/uploads/userAvatars Directory)',
             });
         }
 

@@ -90,7 +90,7 @@ export class AuthService {
             expiresIn: '1d',
         });
         const wsToken = this.jwt.sign(data, {
-            expiresIn: '1d',
+            expiresIn: '7d',
         });
         const refreshToken = this.jwt.sign(data, {
             expiresIn: '7d',

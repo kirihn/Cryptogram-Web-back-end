@@ -22,13 +22,12 @@ model Users {
   ChatMembers  ChatMembers[]
 }
 
-
-
 model Chats {
   ChatId       Int           @id @default(autoincrement())
   ChatName     String
   IsGroup      Boolean
   KeyHash      String
+  AvatarPath   String        @default("/static/defaults/chatAvatars/defaultChatAvatar.png")
   CreatedAt    DateTime      @default(now())
   UpdatedAt    DateTime      @default(now()) @updatedAt
   ChatMessages Messages[]

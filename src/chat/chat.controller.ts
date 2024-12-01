@@ -7,6 +7,9 @@ import {
     UsePipes,
     Get,
     Put,
+    UseInterceptors,
+    UploadedFile,
+    Query,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/createChat.dto';
@@ -19,6 +22,8 @@ import { FixChatDto } from './dto/fixChat.dto';
 import { GetChatInfoDto } from './dto/getChatInfo.dto';
 import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 import { NewMessageDto } from './dto/chatMessage.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileValidationPipe } from 'src/pipes/FileValidation.pipe';
 
 @Controller('chat')
 export class ChatController {
@@ -98,5 +103,19 @@ export class ChatController {
         @Body() dto: NewMessageDto,
     ) {
         return this.chatService.AddMessage(dto, userId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Auth()
+    @Post('uploadAvatar')
+    @UseInterceptors(FileInterceptor('avatar'))
+    async UpdateAvatar(
+        @UploadedFile(new FileValidationPipe(1000, /\.(jpg|jpeg|png|gif)$/i))
+        file: Express.Multer.File,
+        @CurrentUser('UserId') userId: string,
+        @Query('chatId', new ValidationPipe({ transform: true }))
+        chatId: number,
+    ) {
+        return this.chatService.UpdateAvatar(file, userId, chatId);
     }
 }

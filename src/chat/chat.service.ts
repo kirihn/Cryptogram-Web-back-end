@@ -12,6 +12,7 @@ import { GetChatInfoDto } from './dto/getChatInfo.dto';
 import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 import { ChatMessage, NewMessageDto } from './dto/chatMessage.dto';
 import { ChatGateway } from './chat.gateway';
+import * as fs from 'fs';
 
 @Injectable()
 export class ChatService {
@@ -162,6 +163,7 @@ export class ChatService {
                 ChatName: true,
                 IsGroup: true,
                 KeyHash: true,
+                AvatarPath: true,
                 CreatedAt: true,
                 UpdatedAt: true,
                 ChatMembers: {
@@ -265,6 +267,46 @@ export class ChatService {
             chatMemberId: dto.chatMemberId,
             status: !isFixed,
         };
+    }
+
+    async UpdateAvatar(
+        file: Express.Multer.File,
+        userId: string,
+        chatId: number,
+    ) {
+        const uploadDir = 'static/uploads/chatAvatars';
+
+        if (!fs.existsSync(uploadDir)) {
+            throw new BadRequestException({
+                error: true,
+                show: false,
+                message:
+                    'server upload file error (no static/uploads/chatAvatars Directory)',
+            });
+        }
+
+        const FileType = file.mimetype.substring(
+            file.mimetype.indexOf('/') + 1,
+        );
+        const fileName = 'chatId-' + chatId + '.' + FileType;
+        let filePath = `${uploadDir}/${fileName}`;
+
+        try {
+            fs.writeFileSync(filePath, file.buffer);
+            console.log('Аватар чата загружен!');
+        } catch (err) {
+            filePath = 'uploads/default-avatar.png';
+            throw new Error('Ошибка загрузки аватара: ' + err.message);
+        }
+
+        const chat = await this.prisma.chats.update({
+            where: { ChatId: chatId },
+            data: {
+                AvatarPath: filePath,
+            },
+        });
+
+        return chat;
     }
 
     private async ValidateFixChat(dto: FixChatDto, userId: string) {
