@@ -62,6 +62,26 @@ export class ChatService {
     }
 
     async AddMember(dto: AddMemberDto, userId: string) {
+        if (dto.username[0].toLocaleLowerCase() == '@')
+            dto.username = dto.username.slice(1);
+        const addedUser = await this.prisma.users.findUnique({
+            where: {
+                UserName: dto.username,
+            },
+            select: {
+                UserId: true,
+            },
+        });
+
+        if (!addedUser)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'User @' + dto.username + ' not found',
+            });
+
+        dto.userId = addedUser.UserId;
+
         await this.ValidateAddMember(dto, userId);
 
         const NewMember = await this.prisma.chatMembers.create({
@@ -108,6 +128,11 @@ export class ChatService {
                 });
 
                 if (coutMembers === 0) {
+                    await prisma.messages.deleteMany({
+                        where: {
+                            ChatId: member.ChatId,
+                        },
+                    });
                     await prisma.chats.delete({
                         where: {
                             ChatId: member.ChatId,
@@ -137,6 +162,7 @@ export class ChatService {
                         ChatName: true,
                         IsGroup: true,
                         KeyHash: true,
+                        AvatarPath: true,
                     },
                 },
             },
@@ -274,6 +300,8 @@ export class ChatService {
         userId: string,
         chatId: number,
     ) {
+        this.ValidateUpdateAvatar(userId, chatId);
+
         const uploadDir = 'static/uploads/chatAvatars';
 
         if (!fs.existsSync(uploadDir)) {
@@ -309,6 +337,31 @@ export class ChatService {
         return chat;
     }
 
+    private async ValidateUpdateAvatar(userId: string, chatId: number) {
+        const member = await this.prisma.chatMembers.findFirst({
+            where: {
+                UserId: userId,
+                ChatId: chatId,
+            },
+            select: {
+                Role: true,
+            },
+        });
+
+        if (!member.Role)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'You are not a member of this chat',
+            });
+
+        if (member.Role > 3)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: "You don't have enough rights to upload an avatar",
+            });
+    }
     private async ValidateFixChat(dto: FixChatDto, userId: string) {
         const isFixed = await this.prisma.chatMembers.findUnique({
             where: {
@@ -411,18 +464,21 @@ export class ChatService {
         if (member.Role > dto.role)
             throw new ForbiddenException({
                 error: true,
+                show: true,
                 message: 'You cannot grant roles larger than yours',
             });
 
         if (isNewMember)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'This user is already a member of the chat',
             });
 
         if (!isNewMemberExist)
             throw new ForbiddenException({
                 error: true,
+                show: true,
                 message: 'This user does not exist',
             });
     }

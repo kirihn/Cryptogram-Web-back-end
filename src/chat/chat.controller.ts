@@ -62,7 +62,7 @@ export class ChatController {
     }
 
     @UsePipes(new ValidationPipe())
-    @Delete('leaveFromChat')
+    @Post('leaveFromChat')
     @Auth()
     LeaveFromChat(
         @Body() dto: LeaveFromChatDto,

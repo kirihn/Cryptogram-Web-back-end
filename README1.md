@@ -10,11 +10,11 @@ Upgrade:
 [!] : add avatars to group chat
 
 chat roles:
-owner: 1
-deleteAllMember 2
-addMember : 3
-send message : 4
-only read chat : 5
+owner: 1 // владелец
+deleteAllMember 2 // администратор
+addMember, upload avatar, upload chatName : 3 // участник+
+send message : 4 // участник
+only read chat : 5 // читатель
 
 [] : На диплом
 [!]: при загрузке аватара старый не удаляется если у него было другое расширение, нужно исправить.

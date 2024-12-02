@@ -3,6 +3,7 @@ import {
     IsInt,
     IsNotEmpty,
     IsNumber,
+    IsOptional,
     IsPositive,
     IsString,
 } from 'class-validator';
@@ -10,12 +11,12 @@ import {
 export class AddMemberDto {
     @IsString()
     @IsNotEmpty({ message: 'The userId must not be empty' })
-    userId: string;
+    username: string;
 
     @IsNumber()
     @IsNotEmpty()
-    @IsIn([2, 3, 4, 5], {
-        message: 'The Role must be one of the following: 2, 3, 4, 5',
+    @IsIn([1, 2, 3, 4, 5], {
+        message: 'The Role must be one of the following: 1, 2, 3, 4, 5',
     })
     role: number;
 
@@ -23,4 +24,8 @@ export class AddMemberDto {
     @IsNotEmpty({ message: 'The chatId must not be empty' })
     @IsPositive()
     chatId: number;
+
+    @IsString()
+    @IsOptional()
+    userId: string;
 }
