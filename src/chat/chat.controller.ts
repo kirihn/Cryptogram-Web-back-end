@@ -71,6 +71,16 @@ export class ChatController {
         return this.chatService.LeaveFromChat(dto, userId);
     }
 
+    @UsePipes(new ValidationPipe())
+    @Post('leaveFromChat')
+    @Auth()
+    ExcludeFromChat(
+        @Body() dto: LeaveFromChatDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.chatService.LeaveFromChat(dto, userId);
+    }
+
     @Get('getMyChatsList')
     @Auth()
     GetMyChats(@CurrentUser('UserId') userId: string) {

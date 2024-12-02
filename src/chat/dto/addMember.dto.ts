@@ -6,11 +6,15 @@ import {
     IsOptional,
     IsPositive,
     IsString,
+    Matches,
 } from 'class-validator';
 
 export class AddMemberDto {
-    @IsString()
-    @IsNotEmpty({ message: 'The userId must not be empty' })
+    @IsNotEmpty({ message: 'The username must not be empty' })
+    @Matches(/^[a-zA-Z0-9_]+$/, {
+        message:
+            'The user name can contain only English letters, numbers, and underscores',
+    })
     username: string;
 
     @IsNumber()
