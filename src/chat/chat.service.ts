@@ -384,21 +384,6 @@ export class ChatService {
     }
 
     private async ValidateDeleteMember(dto: DeleteMember, userId: string) {
-        const deletedUser = await this.prisma.users.findUnique({
-            where: {
-                UserName: dto.username,
-            },
-        });
-
-        if (!deletedUser)
-            throw new BadRequestException({
-                error: true,
-                show: true,
-                message: 'User @' + dto.username + ' not found',
-            });
-
-        dto.userId = deletedUser.UserId;
-
         const members = await this.prisma.chatMembers.findMany({
             where: {
                 ChatId: dto.chatId,
