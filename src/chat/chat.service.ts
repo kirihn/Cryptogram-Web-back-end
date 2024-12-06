@@ -13,6 +13,8 @@ import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 import { ChatMessage, NewMessageDto } from './dto/chatMessage.dto';
 import { ChatGateway } from './chat.gateway';
 import * as fs from 'fs';
+import { UpdateChatNameDto } from './dto/updateChatName.dto';
+import { DeleteMessageDto } from './dto/deleteMessage.dto';
 
 @Injectable()
 export class ChatService {
@@ -108,7 +110,7 @@ export class ChatService {
                 throw new BadRequestException(err);
             });
 
-        return 'chatMemberDeleted';
+        return { message: 'chatMemberDeleted' };
     }
 
     async LeaveFromChat(dto: LeaveFromChatDto, userId: string) {
@@ -145,7 +147,7 @@ export class ChatService {
                 throw new BadRequestException({ error: true, message: err });
             });
 
-        return 'You leave from this chat';
+        return { message: 'You leave from this chat' };
     }
 
     async GetMyChats(userId: string) {
@@ -338,6 +340,83 @@ export class ChatService {
         return chat;
     }
 
+    async UpdateChatName(dto: UpdateChatNameDto) {
+        //await ValidateUpdateChatName(dto, userId);
+
+        await this.prisma.chats.update({
+            where: {
+                ChatId: dto.chatId,
+            },
+            data: {
+                ChatName: dto.chatName,
+            },
+        });
+        return { message: 'Chat name updated' };
+    }
+
+    async DeleteMessage(dto: DeleteMessageDto, userId: string) {
+        await this.ValidateDeleteMessage(dto, userId);
+
+        const chat = await this.prisma.messages.delete({
+            where: {
+                MessageId: dto.MessageId,
+            },
+            select: {
+                ChatId: true,
+            },
+        });
+
+        const chatMembers = await this.prisma.chats.findUnique({
+            where: {
+                ChatId: chat.ChatId,
+            },
+            select: {
+                ChatMembers: {
+                    select: {
+                        UserId: true,
+                        ChatId: true,
+                    },
+                },
+            },
+        });
+
+        chatMembers.ChatMembers.forEach((member) => {
+            this.wsGateway.DeleteMessageToUser(
+                dto.MessageId,
+                member.UserId,
+                member.ChatId,
+            );
+        });
+
+        return { message: 'successful' };
+    }
+
+    private async ValidateDeleteMessage(dto: DeleteMessageDto, userId: string) {
+        const message = await this.prisma.messages.findUnique({
+            where: {
+                MessageId: dto.MessageId,
+                SenderId: userId,
+            },
+            select: {
+                MessageId: true,
+            },
+        });
+        if (!message)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'you are not a sender of this message.',
+            });
+    }
+
+    private async ValidateUpdateChatName(
+        dto: UpdateChatNameDto,
+        userId: string,
+    ) {
+        const member = { dto, userId };
+        return member;
+    }
+
     private async ValidateUpdateAvatar(userId: string, chatId: number) {
         const member = await this.prisma.chatMembers.findFirst({
             where: {
@@ -363,6 +442,7 @@ export class ChatService {
                 message: "You don't have enough rights to upload an avatar",
             });
     }
+
     private async ValidateFixChat(dto: FixChatDto, userId: string) {
         const isFixed = await this.prisma.chatMembers.findUnique({
             where: {

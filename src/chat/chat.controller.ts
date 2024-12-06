@@ -2,7 +2,6 @@ import {
     Controller,
     Post,
     Body,
-    Delete,
     ValidationPipe,
     UsePipes,
     Get,
@@ -10,6 +9,7 @@ import {
     UseInterceptors,
     UploadedFile,
     Query,
+    Delete,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/createChat.dto';
@@ -24,6 +24,8 @@ import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 import { NewMessageDto } from './dto/chatMessage.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileValidationPipe } from 'src/pipes/FileValidation.pipe';
+import { UpdateChatNameDto } from './dto/updateChatName.dto';
+import { DeleteMessageDto } from './dto/deleteMessage.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -43,7 +45,7 @@ export class ChatController {
     @Post('AddMember')
     @CheckChatRole(1, 2, 3)
     @Auth()
-    AddMember(
+    async AddMember(
         @Body() dto: AddMemberDto,
         @CurrentUser('UserId') userId: string,
     ) {
@@ -51,10 +53,10 @@ export class ChatController {
     }
 
     @UsePipes(new ValidationPipe())
-    @Delete('deleteMember')
+    @Put('deleteMember')
     @CheckChatRole(1, 2)
     @Auth()
-    DeleteMember(
+    async DeleteMember(
         @Body() dto: DeleteMember,
         @CurrentUser('UserId') userId: string,
     ) {
@@ -64,7 +66,7 @@ export class ChatController {
     @UsePipes(new ValidationPipe())
     @Post('leaveFromChat')
     @Auth()
-    LeaveFromChat(
+    async LeaveFromChat(
         @Body() dto: LeaveFromChatDto,
         @CurrentUser('UserId') userId: string,
     ) {
@@ -74,7 +76,7 @@ export class ChatController {
     @UsePipes(new ValidationPipe())
     @Post('leaveFromChat')
     @Auth()
-    ExcludeFromChat(
+    async ExcludeFromChat(
         @Body() dto: LeaveFromChatDto,
         @CurrentUser('UserId') userId: string,
     ) {
@@ -83,21 +85,24 @@ export class ChatController {
 
     @Get('getMyChatsList')
     @Auth()
-    GetMyChats(@CurrentUser('UserId') userId: string) {
+    async GetMyChats(@CurrentUser('UserId') userId: string) {
         return this.chatService.GetMyChats(userId);
     }
 
     @UsePipes(new ValidationPipe())
     @Put('fixChat')
     @Auth()
-    FixChat(@Body() dto: FixChatDto, @CurrentUser('UserId') userId: string) {
+    async FixChat(
+        @Body() dto: FixChatDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
         return this.chatService.FixChat(dto, userId);
     }
 
     @UsePipes(new ValidationPipe())
     @Post('GetChatInfo')
     @Auth()
-    GetChatInfo(
+    async GetChatInfo(
         @Body() dto: GetChatInfoDto,
         @CurrentUser('UserId') userId: string,
     ) {
@@ -108,7 +113,7 @@ export class ChatController {
     @Post('sendMessage')
     @CheckChatRole(1, 2, 3, 4)
     @Auth()
-    AddMessage(
+    async AddMessage(
         @CurrentUser('UserId') userId: string,
         @Body() dto: NewMessageDto,
     ) {
@@ -116,8 +121,8 @@ export class ChatController {
     }
 
     @UsePipes(new ValidationPipe())
-    @Auth()
     @Post('uploadAvatar')
+    @Auth()
     @UseInterceptors(FileInterceptor('avatar'))
     async UpdateAvatar(
         @UploadedFile(new FileValidationPipe(1000, /\.(jpg|jpeg|png|gif)$/i))
@@ -127,5 +132,23 @@ export class ChatController {
         chatId: number,
     ) {
         return this.chatService.UpdateAvatar(file, userId, chatId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Put('updateChatName')
+    @CheckChatRole(1, 2, 3)
+    @Auth()
+    UpdateChatName(@Body() dto: UpdateChatNameDto) {
+        return this.chatService.UpdateChatName(dto);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Delete('deleteMessage')
+    @Auth()
+    async DeleteMessage(
+        @Body() dto: DeleteMessageDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.chatService.DeleteMessage(dto, userId);
     }
 }
