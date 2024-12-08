@@ -26,13 +26,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     handleConnection(client: Socket) {
         try {
             const token = client.handshake.query.token as string;
-            //console.log(token);
+
             if (!token) {
                 throw new Error('Token not provided');
             }
 
             const secret = this.configService.get('JWT_SECRET');
-            //console.log(secret);
 
             if (!secret) {
                 throw new Error('JWT_SECRET is not defined');
@@ -41,8 +40,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             const payload = this.jwtService.verify(token, { secret });
             const userId = payload.userId;
 
-            //console.log(payload);
-            //console.log(userId);
             if (!userId) {
                 throw new Error('Invalid token payload');
             }
@@ -71,6 +68,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.server
                 .to(socketId)
                 .emit('addUserToChat', { message: 'updateChatPanel' });
+        }
+    }
+
+    async DeleteUserFromChat(userId: string, deletedChatId: number) {
+        const socketId = this.connectedClients.get(userId);
+
+        if (socketId) {
+            this.server.to(socketId).emit('deleteUserFromChat', {
+                message: 'updateChatPanel',
+                deletedChatId,
+            });
         }
     }
 

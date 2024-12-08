@@ -96,11 +96,11 @@ export class ChatService {
             },
         });
 
-        const chatMembers = await this.GetChatMembers(dto.chatId);
+        // const chatMembers = await this.GetChatMembers(dto.chatId);
 
-        chatMembers.ChatMembers.forEach((member) => {
-            this.wsGateway.AddUserToChat(member.UserId);
-        });
+        // chatMembers.ChatMembers.forEach((member) => {
+        //     this.wsGateway.AddUserToChat(member.UserId);
+        // });
 
         this.wsGateway.AddUserToChat(dto.userId);
 
@@ -119,6 +119,8 @@ export class ChatService {
             .catch((err) => {
                 throw new BadRequestException(err);
             });
+
+        this.wsGateway.DeleteUserFromChat(dto.userId, dto.chatId);
 
         return { message: 'chatMemberDeleted' };
     }
