@@ -26,6 +26,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FileValidationPipe } from 'src/pipes/FileValidation.pipe';
 import { UpdateChatNameDto } from './dto/updateChatName.dto';
 import { DeleteMessageDto } from './dto/deleteMessage.dto';
+import { UpdateMessageDto } from './dto/updateMessage.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -150,5 +151,15 @@ export class ChatController {
         @CurrentUser('UserId') userId: string,
     ) {
         return this.chatService.DeleteMessage(dto, userId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Put('updateMessage')
+    @Auth()
+    async UpdateMessage(
+        @Body() dto: UpdateMessageDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.chatService.UpdateMessage(dto, userId);
     }
 }

@@ -64,6 +64,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
     }
 
+    async AddUserToChat(userId: string) {
+        const socketId = this.connectedClients.get(userId);
+
+        if (socketId) {
+            this.server
+                .to(socketId)
+                .emit('addToChat', { message: 'updateChatPanel' });
+        }
+    }
+
     async SendMessageToUser(
         message: ChatMessage,
         userId: string,
@@ -85,6 +95,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.server
                 .to(socketId)
                 .emit('DeleteMessage', { deletedMessageId, chatId });
+        }
+    }
+
+    async UpdateMessageToUser(
+        updatedMessageId: number,
+        userId: string,
+        chatId: number,
+        newContent: string,
+    ) {
+        const socketId = this.connectedClients.get(userId);
+        if (socketId) {
+            this.server.to(socketId).emit('UpdateMessage', {
+                updatedMessageId,
+                chatId,
+                newContent,
+            });
         }
     }
 }

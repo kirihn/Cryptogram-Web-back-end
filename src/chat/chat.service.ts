@@ -15,6 +15,7 @@ import { ChatGateway } from './chat.gateway';
 import * as fs from 'fs';
 import { UpdateChatNameDto } from './dto/updateChatName.dto';
 import { DeleteMessageDto } from './dto/deleteMessage.dto';
+import { UpdateMessageDto } from './dto/updateMessage.dto';
 
 @Injectable()
 export class ChatService {
@@ -94,6 +95,15 @@ export class ChatService {
                 Role: dto.role,
             },
         });
+
+        const chatMembers = await this.GetChatMembers(dto.chatId);
+
+        chatMembers.ChatMembers.forEach((member) => {
+            this.wsGateway.AddUserToChat(member.UserId);
+        });
+
+        this.wsGateway.AddUserToChat(dto.userId);
+
         return NewMember;
     }
 
@@ -256,19 +266,7 @@ export class ChatService {
             },
         });
 
-        const chatMembers = await this.prisma.chats.findUnique({
-            where: {
-                ChatId: dto.chatId,
-            },
-            select: {
-                ChatMembers: {
-                    select: {
-                        UserId: true,
-                        ChatId: true,
-                    },
-                },
-            },
-        });
+        const chatMembers = await this.GetChatMembers(dto.chatId);
 
         chatMembers.ChatMembers.forEach((member) => {
             this.wsGateway.SendMessageToUser(
@@ -355,7 +353,7 @@ export class ChatService {
     }
 
     async DeleteMessage(dto: DeleteMessageDto, userId: string) {
-        await this.ValidateDeleteMessage(dto, userId);
+        await this.ValidateUserMessage(dto, userId);
 
         const chat = await this.prisma.messages.delete({
             where: {
@@ -366,19 +364,7 @@ export class ChatService {
             },
         });
 
-        const chatMembers = await this.prisma.chats.findUnique({
-            where: {
-                ChatId: chat.ChatId,
-            },
-            select: {
-                ChatMembers: {
-                    select: {
-                        UserId: true,
-                        ChatId: true,
-                    },
-                },
-            },
-        });
+        const chatMembers = await this.GetChatMembers(chat.ChatId);
 
         chatMembers.ChatMembers.forEach((member) => {
             this.wsGateway.DeleteMessageToUser(
@@ -391,7 +377,59 @@ export class ChatService {
         return { message: 'successful' };
     }
 
-    private async ValidateDeleteMessage(dto: DeleteMessageDto, userId: string) {
+    async UpdateMessage(dto: UpdateMessageDto, userId: string) {
+        await this.ValidateUserMessage(dto, userId);
+
+        const chat = await this.prisma.messages.update({
+            where: {
+                MessageId: dto.MessageId,
+            },
+            data: {
+                Content: dto.newContent,
+                IsUpdate: true,
+            },
+            select: {
+                ChatId: true,
+                Content: true,
+            },
+        });
+
+        const chatMembers = await this.GetChatMembers(chat.ChatId);
+
+        chatMembers.ChatMembers.forEach((member) => {
+            this.wsGateway.UpdateMessageToUser(
+                dto.MessageId,
+                member.UserId,
+                member.ChatId,
+                chat.Content,
+            );
+        });
+
+        return { message: 'successful' };
+    }
+
+    private async GetChatMembers(chatId: number) {
+        const chatMembers = await this.prisma.chats.findUnique({
+            where: {
+                ChatId: chatId,
+            },
+            select: {
+                ChatMembers: {
+                    select: {
+                        UserId: true,
+                        ChatId: true,
+                    },
+                },
+            },
+        });
+
+        return chatMembers;
+    }
+
+    private async ValidateUserMessage(
+        dto: DeleteMessageDto | UpdateMessageDto,
+        userId: string,
+    ) {
         const message = await this.prisma.messages.findUnique({
             where: {
                 MessageId: dto.MessageId,
@@ -595,6 +633,7 @@ export class ChatService {
 
         return member;
     }
+
     private async ValidateAddMessage(dto: NewMessageDto, userId: string) {
         const chatMember = await this.prisma.chatMembers.findFirst({
             where: {
