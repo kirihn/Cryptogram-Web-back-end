@@ -70,7 +70,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (socketId) {
             this.server
                 .to(socketId)
-                .emit('addToChat', { message: 'updateChatPanel' });
+                .emit('addUserToChat', { message: 'updateChatPanel' });
         }
     }
 
