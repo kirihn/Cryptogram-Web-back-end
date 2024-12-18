@@ -115,6 +115,7 @@ export class AuthService {
         if (!user)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'this email is not registered',
             });
 

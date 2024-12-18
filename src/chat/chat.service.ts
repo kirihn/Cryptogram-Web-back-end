@@ -96,12 +96,6 @@ export class ChatService {
             },
         });
 
-        // const chatMembers = await this.GetChatMembers(dto.chatId);
-
-        // chatMembers.ChatMembers.forEach((member) => {
-        //     this.wsGateway.AddUserToChat(member.UserId);
-        // });
-
         this.wsGateway.AddUserToChat(dto.userId);
 
         return NewMember;
@@ -341,8 +335,6 @@ export class ChatService {
     }
 
     async UpdateChatName(dto: UpdateChatNameDto) {
-        //await ValidateUpdateChatName(dto, userId);
-
         await this.prisma.chats.update({
             where: {
                 ChatId: dto.chatId,
@@ -497,6 +489,7 @@ export class ChatService {
         if (!isFixed || isFixed.UserId !== userId)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'you are not a member of this chat',
             });
 
@@ -528,24 +521,28 @@ export class ChatService {
         if (!currentMember)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'you are not a member of this chat',
             });
 
         if (!deletedMember)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'deleted user are not a member of this chat',
             });
 
         if (deletedMember.UserId === currentMember.UserId)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'You cannot delete yourself, try leave from chat',
             });
 
         if (currentMember.Role >= deletedMember.Role)
             throw new ForbiddenException({
                 error: true,
+                show: true,
                 message: 'You cannot del user with role than <= your role',
             });
 
@@ -624,6 +621,7 @@ export class ChatService {
         if (!member)
             throw new BadRequestException({
                 error: true,
+                show: true,
                 message: 'you are not a member of this chat',
             });
 
