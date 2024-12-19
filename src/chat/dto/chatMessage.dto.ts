@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
     IsIn,
     IsInt,
@@ -19,6 +20,7 @@ export class ChatMessage {
 }
 
 export class NewMessageDto {
+    @ApiProperty()
     @IsString()
     @MinLength(1, {
         message: 'message must be 1 least characters long',
@@ -28,12 +30,14 @@ export class NewMessageDto {
     })
     content: string;
 
+    @ApiProperty()
     @IsString()
     @IsIn(['msg', 'sticker'], {
         message: 'The message type must be a msd or sticker',
     })
     messageType: string;
 
+    @ApiProperty()
     @IsInt()
     @IsNotEmpty({ message: 'The chatId must not be empty' })
     @IsPositive()

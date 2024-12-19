@@ -1,8 +1,4 @@
-import {
-    BadRequestException,
-    Injectable,
-    UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { PrismaService } from 'src/prisma.servise';
 import { hash, verify } from 'argon2';
@@ -120,9 +116,9 @@ export class AuthService {
             });
 
         const isValid = await verify(user.PasswordHash, dto.password);
-
+        console.log(!isValid);
         if (!isValid)
-            throw new UnauthorizedException({
+            throw new BadRequestException({
                 error: true,
                 show: true,
                 message: 'invalid password',

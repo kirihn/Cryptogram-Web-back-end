@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 // import { join } from 'path';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -9,20 +10,15 @@ async function bootstrap() {
     app.enableCors();
     app.use(cookieParser());
 
-    // app.use((req, res, next) => {
-    //     console.log(1);
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('CryptogramWeb API')
+        .setDescription('use this document to explore this API')
+        .setVersion('1.0')
+        .build();
 
-    //     if (!req.url.startsWith('/api')) {
-    //         console.log(2);
-    //         res.sendFile(
-    //             join(__dirname, '..', 'reactBuild', 'dist', 'index.html'),
-    //         );
-    //     } else {
-    //         console.log(3);
+    const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
 
-    //         next();
-    //     }
-    // });
+    SwaggerModule.setup('swagger', app, swaggerDocument);
 
     await app.listen(3000);
 }
