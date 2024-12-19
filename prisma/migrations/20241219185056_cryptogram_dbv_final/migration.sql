@@ -1,10 +1,12 @@
 -- CreateTable
 CREATE TABLE "Users" (
     "UserId" TEXT NOT NULL,
+    "Name" TEXT NOT NULL,
+    "AvatarPath" TEXT NOT NULL DEFAULT '/static/defaults/userAvatars/defaultUserAvatar.jpg',
     "UserName" TEXT NOT NULL,
-    "AvatarPath" TEXT NOT NULL DEFAULT '/uploads/avatars/default-avatar.png',
-    "Login" TEXT NOT NULL,
     "Email" TEXT NOT NULL,
+    "Language" TEXT NOT NULL DEFAULT 'ru',
+    "Role" INTEGER NOT NULL DEFAULT 1,
     "PasswordHash" TEXT NOT NULL,
     "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "UpdatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -18,6 +20,7 @@ CREATE TABLE "Chats" (
     "ChatName" TEXT NOT NULL,
     "IsGroup" BOOLEAN NOT NULL,
     "KeyHash" TEXT NOT NULL,
+    "AvatarPath" TEXT NOT NULL DEFAULT '/static/defaults/chatAvatars/defaultChatAvatar.png',
     "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "UpdatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -41,11 +44,11 @@ CREATE TABLE "Messages" (
 
 -- CreateTable
 CREATE TABLE "ChatMembers" (
-    "ChatMemberId" SERIAL NOT NULL,
-    "ChatId" INTEGER NOT NULL,
     "UserId" TEXT NOT NULL,
+    "ChatMemberId" SERIAL NOT NULL,
     "Role" INTEGER NOT NULL,
-    "IsFixed" BOOLEAN NOT NULL,
+    "ChatId" INTEGER NOT NULL,
+    "IsFixed" BOOLEAN NOT NULL DEFAULT false,
     "JoinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ChatMembers_pkey" PRIMARY KEY ("ChatMemberId")
@@ -68,7 +71,7 @@ CREATE TABLE "Stickers" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Users_Login_key" ON "Users"("Login");
+CREATE UNIQUE INDEX "Users_UserName_key" ON "Users"("UserName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Users_Email_key" ON "Users"("Email");
