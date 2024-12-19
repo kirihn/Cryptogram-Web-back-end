@@ -14,8 +14,7 @@ export class AuthDto {
         example: '2384',
     })
     @IsString()
-    @MinLength(1, {
-        // 8
+    @MinLength(8, {
         message: 'password must be 8 least characters long',
     })
     password: string;
