@@ -21,8 +21,9 @@ import { UpdateMessageDto } from './dto/updateMessage.dto';
 export class ChatService {
     constructor(
         private prisma: PrismaService,
-        private readonly wsGateway: ChatGateway, // Инжектируем ChatGateway
+        private readonly wsGateway: ChatGateway,
     ) {}
+
     async CreateChat(dto: CreateChatDto, userId: string) {
         const chat = await this.prisma.$transaction(async (prisma) => {
             const chat = await prisma.chats.create({

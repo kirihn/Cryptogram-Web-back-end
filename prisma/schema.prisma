@@ -50,8 +50,8 @@ model Messages {
 }
 
 model ChatMembers {
-  UserId       String
   ChatMemberId Int      @id @default(autoincrement())
+  UserId       String
   Role         Int
   ChatId       Int
   IsFixed      Boolean  @default(false)
