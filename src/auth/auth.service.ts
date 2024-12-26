@@ -112,7 +112,7 @@ export class AuthService {
             throw new BadRequestException({
                 error: true,
                 show: true,
-                message: 'this email is not registered',
+                message: 'This email is not registered',
             });
 
         const isValid = await verify(user.PasswordHash, dto.password);
