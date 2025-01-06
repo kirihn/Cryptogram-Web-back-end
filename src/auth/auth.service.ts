@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
 import { PrismaService } from 'src/prisma.servise';
 import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { Users } from '@prisma/client';
+
+import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 
 @Injectable()

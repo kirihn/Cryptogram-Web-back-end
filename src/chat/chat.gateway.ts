@@ -6,9 +6,10 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ChatMessage } from './dto/chatMessage.dto';
 import { PrismaService } from 'src/prisma.servise';
 import { ConfigService } from '@nestjs/config';
+
+import { ChatMessage } from './dto/chatMessage.dto';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {

@@ -3,8 +3,10 @@ import {
     ForbiddenException,
     Injectable,
 } from '@nestjs/common';
-import { CreateChatDto } from './dto/createChat.dto';
 import { PrismaService } from 'src/prisma.servise';
+import * as fs from 'fs';
+
+import { CreateChatDto } from './dto/createChat.dto';
 import { AddMemberDto } from './dto/addMember.dto';
 import { DeleteMember } from './dto/deleteMember.dto';
 import { FixChatDto } from './dto/fixChat.dto';
@@ -12,7 +14,6 @@ import { GetChatInfoDto } from './dto/getChatInfo.dto';
 import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 import { ChatMessage, NewMessageDto } from './dto/chatMessage.dto';
 import { ChatGateway } from './chat.gateway';
-import * as fs from 'fs';
 import { UpdateChatNameDto } from './dto/updateChatName.dto';
 import { DeleteMessageDto } from './dto/deleteMessage.dto';
 import { UpdateMessageDto } from './dto/updateMessage.dto';

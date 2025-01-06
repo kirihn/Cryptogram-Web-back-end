@@ -9,15 +9,16 @@ import {
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
-import { ProfileService } from './profile.service';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { Auth } from 'src/decorators/auth.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileValidationPipe } from 'src/pipes/FileValidation.pipe';
+
+import { ProfileService } from './profile.service';
 import { UpdateNameDto } from './dto/updateName.dto';
 import { UpdateUserNameDto } from './dto/updateUserName.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UpdateLanguageDto } from './dto/updateLanguage.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { FileValidationPipe } from 'src/pipes/FileValidation.pipe';
 
 @Controller('profile')
 export class ProfileController {

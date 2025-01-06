@@ -11,19 +11,20 @@ import {
     Query,
     Delete,
 } from '@nestjs/common';
-import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/createChat.dto';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { Auth } from 'src/decorators/auth.decorator';
-import { AddMemberDto } from './dto/addMember.dto';
 import { CheckChatRole } from 'src/decorators/checkChatRole.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileValidationPipe } from 'src/pipes/FileValidation.pipe';
+
+import { ChatService } from './chat.service';
+import { CreateChatDto } from './dto/createChat.dto';
+import { AddMemberDto } from './dto/addMember.dto';
 import { DeleteMember } from './dto/deleteMember.dto';
 import { FixChatDto } from './dto/fixChat.dto';
 import { GetChatInfoDto } from './dto/getChatInfo.dto';
 import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 import { NewMessageDto } from './dto/chatMessage.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { FileValidationPipe } from 'src/pipes/FileValidation.pipe';
 import { UpdateChatNameDto } from './dto/updateChatName.dto';
 import { DeleteMessageDto } from './dto/deleteMessage.dto';
 import { UpdateMessageDto } from './dto/updateMessage.dto';

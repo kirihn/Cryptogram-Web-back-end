@@ -8,13 +8,14 @@ import {
     Res,
     Get,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { AuthDto } from './dto/auth.dto';
 import { Response } from 'express';
 import { Auth } from 'src/decorators/auth.decorator';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
+
+import { AuthDto } from './dto/auth.dto';
+import { RegisterDto } from './dto/register.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {

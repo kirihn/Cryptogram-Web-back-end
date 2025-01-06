@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.servise';
+import { hash, verify } from 'argon2';
+import * as fs from 'fs';
+
 import { UpdateNameDto } from './dto/updateName.dto';
 import { UpdateUserNameDto } from './dto/updateUserName.dto';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
 import { UpdateLanguageDto } from './dto/updateLanguage.dto';
-import { hash, verify } from 'argon2';
-import * as fs from 'fs';
 @Injectable()
 export class ProfileService {
     constructor(private prisma: PrismaService) {}
