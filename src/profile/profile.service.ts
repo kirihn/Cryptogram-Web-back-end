@@ -56,7 +56,7 @@ export class ProfileService {
             },
         });
 
-        return user;
+        return { newLanguage: user.Language };
     }
 
     async UpdatePassword(dto: UpdatePasswordDto, userId: string) {

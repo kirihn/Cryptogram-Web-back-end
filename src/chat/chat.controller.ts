@@ -108,7 +108,17 @@ export class ChatController {
         @Body() dto: GetChatInfoDto,
         @CurrentUser('UserId') userId: string,
     ) {
+        //await this.sleep();
         return this.chatService.GetChatInfo(dto, userId);
+    }
+
+    async sleep() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                console.log('skeep 3 second');
+                resolve(null);
+            }, 3000);
+        });
     }
 
     @UsePipes(new ValidationPipe())
