@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
@@ -21,6 +21,11 @@ model Users {
   UpdatedAt    DateTime      @default(now()) @updatedAt
   UserMessages Messages[]
   ChatMembers  ChatMembers[]
+
+  SentContactRequests      ContactRequests[] @relation("SenderRelation")
+  ReceivedContactRequests  ContactRequests[] @relation("RecipientRelation")
+  ContactsWhenOwnerAsUser1 Contacts[]        @relation("ContactsWhenOwnerAsUser1")
+  ContactsWhenOwnerAsUser2 Contacts[]        @relation("ContactsWhenOwnerAsUser2")
 }
 
 model Chats {
@@ -60,6 +65,28 @@ model ChatMembers {
   Member       Users    @relation(fields: [UserId], references: [UserId])
 }
 
+model ContactRequests {
+  ContactRequestId Int                   @id @default(autoincrement())
+  UserSenderId     String
+  UserRecipientId  String
+  CreatedAt        DateTime              @default(now())
+  UpdatedAt        DateTime              @default(now()) @updatedAt
+  Status           ContactRequestsStatus @default(pending)
+  UserSender       Users                 @relation("SenderRelation", fields: [UserSenderId], references: [UserId])
+  UserRecipient    Users                 @relation("RecipientRelation", fields: [UserRecipientId], references: [UserId])
+}
+
+model Contacts {
+  ContactId Int      @id @default(autoincrement())
+  UserId1   String
+  UserId2   String
+  ChatId    Int
+  CreatedAt DateTime @default(now())
+  UpdatedAt DateTime @default(now()) @updatedAt
+  User1     Users    @relation("ContactsWhenOwnerAsUser1", fields: [UserId1], references: [UserId])
+  User2     Users    @relation("ContactsWhenOwnerAsUser2", fields: [UserId2], references: [UserId])
+}
+
 model StickerGroup {
   StickerGroupId Int        @id @default(autoincrement())
   GroupName      String
@@ -70,4 +97,10 @@ model Stickers {
   StickerId      Int          @id @default(autoincrement())
   StickerGroupId Int
   StickerGroup   StickerGroup @relation(fields: [StickerGroupId], references: [StickerGroupId])
+}
+
+enum ContactRequestsStatus {
+  pending
+  accepted
+  blocked
 }

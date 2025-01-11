@@ -9,6 +9,7 @@ import { PrismaService } from './prisma.servise';
 import { AuthModule } from './auth/auth.module';
 import { SettingsModule } from './profile/profile.module';
 import { ChatModule } from './chat/chat.module';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { ChatModule } from './chat/chat.module';
         ConfigModule.forRoot(),
         SettingsModule,
         ChatModule,
+        ContactModule,
     ],
     controllers: [AppController],
     providers: [AppService, PrismaService],
