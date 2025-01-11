@@ -60,14 +60,52 @@ export class ContactService {
     }
 
     async GetMyContactsRequest(userId: string) {
-        return userId;
+        const contactsRequests = await this.prisma.users.findUnique({
+            where: { UserId: userId },
+            select: {
+                SentContactRequests: {
+                    select: {
+                        ContactRequestId: true,
+                        CreatedAt: true,
+                        Status: true,
+                        UserRecipient: {
+                            select: {
+                                UserId: true,
+                                Name: true,
+                                AvatarPath: true,
+                                UserName: true,
+                                Email: true,
+                            },
+                        },
+                    },
+                },
+                ReceivedContactRequests: {
+                    select: {
+                        ContactRequestId: true,
+                        CreatedAt: true,
+                        Status: true,
+                        UserSender: {
+                            select: {
+                                UserId: true,
+                                Name: true,
+                                AvatarPath: true,
+                                UserName: true,
+                                Email: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return contactsRequests;
     }
 
     async AddContactRequest(userId: string) {
         return userId;
     }
 
-    async addContactResponse(userId: string) {
+    async AddContactResponse(userId: string) {
         return userId;
     }
 

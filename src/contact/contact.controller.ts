@@ -14,9 +14,11 @@ export class ContactController {
         return this.contactService.GetMyContacts(userId);
     }
 
-    // async GetMyContactsRequest(userId: string) {
-    //     return userId;
-    // }
+    @Auth()
+    @Get('getMycontactRequests')
+    async GetMyContactsRequest(@CurrentUser('UserId') userId: string) {
+        return this.contactService.GetMyContactsRequest(userId);
+    }
 
     // async AddContactRequest(userId: string) {
     //     return userId;

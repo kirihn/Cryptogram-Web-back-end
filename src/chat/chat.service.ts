@@ -4,6 +4,7 @@ import {
     Injectable,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.servise';
+import { CryptogramGateway } from 'src/webSocket/cryptogram.gateway';
 import * as fs from 'fs';
 
 import { CreateChatDto } from './dto/createChat.dto';
@@ -13,7 +14,6 @@ import { FixChatDto } from './dto/fixChat.dto';
 import { GetChatInfoDto } from './dto/getChatInfo.dto';
 import { LeaveFromChatDto } from './dto/leaveFromChat.dto';
 import { ChatMessage, NewMessageDto } from './dto/chatMessage.dto';
-import { ChatGateway } from './chat.gateway';
 import { UpdateChatNameDto } from './dto/updateChatName.dto';
 import { DeleteMessageDto } from './dto/deleteMessage.dto';
 import { UpdateMessageDto } from './dto/updateMessage.dto';
@@ -22,7 +22,7 @@ import { UpdateMessageDto } from './dto/updateMessage.dto';
 export class ChatService {
     constructor(
         private prisma: PrismaService,
-        private readonly wsGateway: ChatGateway,
+        private readonly wsGateway: CryptogramGateway,
     ) {}
 
     async CreateChat(dto: CreateChatDto, userId: string) {
