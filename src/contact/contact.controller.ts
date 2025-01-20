@@ -1,4 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Param,
+    Post,
+    UsePipes,
+    ValidationPipe,
+} from '@nestjs/common';
 import { Auth } from 'src/decorators/auth.decorator';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
 
@@ -20,9 +27,16 @@ export class ContactController {
         return this.contactService.GetMyContactsRequest(userId);
     }
 
-    // async AddContactRequest(userId: string) {
-    //     return userId;
-    // }
+    @UsePipes(new ValidationPipe())
+    @Auth()
+    @Post('addContactRequest/:UserRecipientId')
+    async AddContactRequest(
+        @Param('UserRecipientId') userRecipientId: string,
+        @CurrentUser('UserId')
+        userId: string,
+    ) {
+        return this.contactService.AddContactRequest(userRecipientId, userId);
+    }
 
     // async addContactResponse(userId: string) {
     //     return userId;
