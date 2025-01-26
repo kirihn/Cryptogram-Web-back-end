@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { error } from 'console';
 import { PrismaService } from 'src/prisma.servise';
+import { ContactRequestsStatus } from '@prisma/client';
+
+import { AddContactResponseDto } from './dto/addContactResponse.dto';
 
 @Injectable()
 export class ContactService {
@@ -114,7 +116,69 @@ export class ContactService {
         return { message: 'successful' };
     }
 
-    async AddContactResponse(userId: string) {
+    async AddContactResponse(dto: AddContactResponseDto, userId: string) {
+        await this.AddContactResponseValidation(dto, userId);
+
+        if (dto.NewContactRequestStatus === ContactRequestsStatus.accepted) {
+            const newContact = await this.prisma.$transaction(
+                async (prisma) => {
+                    const contactRequest = await prisma.contactRequests.delete({
+                        where: { ContactRequestId: dto.ContactRequestId },
+                        select: {
+                            UserRecipientId: true,
+                            UserSenderId: true,
+                        },
+                    });
+                    const chat = await prisma.chats.create({
+                        data: {
+                            ChatName: 'Personal Chat',
+                            IsGroup: false,
+                            KeyHash: 'none',
+                        },
+                    });
+                    await prisma.chatMembers.create({
+                        data: {
+                            UserId: contactRequest.UserRecipientId,
+                            ChatId: chat.ChatId,
+                            Role: 4,
+                        },
+                    });
+                    await prisma.chatMembers.create({
+                        data: {
+                            UserId: contactRequest.UserSenderId,
+                            ChatId: chat.ChatId,
+                            Role: 4,
+                        },
+                    });
+
+                    const contact = await prisma.contacts.create({
+                        data: {
+                            UserId1: contactRequest.UserRecipientId,
+                            UserId2: contactRequest.UserSenderId,
+                            ChatId: chat.ChatId,
+                        },
+                    });
+                    return contact;
+                },
+            );
+            return newContact;
+        } else if (
+            dto.NewContactRequestStatus === ContactRequestsStatus.blocked
+        ) {
+            const updatedContactRequest =
+                await this.prisma.contactRequests.update({
+                    where: { ContactRequestId: dto.ContactRequestId },
+                    data: {
+                        Status: ContactRequestsStatus.blocked,
+                    },
+                });
+
+            return updatedContactRequest;
+        }
+        return userId;
+    }
+
+    async DeleteContactRequest(userId: string) {
         return userId;
     }
 
@@ -134,7 +198,7 @@ export class ContactService {
             });
 
         const [UserRecipient, ContactExist, ContactRequestExist] =
-            await this.prisma.$transaction([
+            await Promise.all([
                 this.prisma.users.findUnique({
                     where: { UserId: userRecipientId },
                     select: {
@@ -197,6 +261,39 @@ export class ContactService {
                 error: true,
                 show: true,
                 message: 'This user has already sent you a request!',
+            });
+    }
+
+    private async AddContactResponseValidation(
+        dto: AddContactResponseDto,
+        userId: string,
+    ) {
+        if (dto.NewContactRequestStatus === ContactRequestsStatus.pending)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'you cannot set the status as pending!',
+            });
+
+        const ContactRequest = await this.prisma.contactRequests.findUnique({
+            where: { ContactRequestId: dto.ContactRequestId },
+            select: {
+                UserRecipientId: true,
+            },
+        });
+
+        if (!ContactRequest)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'The request was not found!',
+            });
+
+        if (ContactRequest.UserRecipientId !== userId)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'You are not the recipient of this request!',
             });
     }
 }

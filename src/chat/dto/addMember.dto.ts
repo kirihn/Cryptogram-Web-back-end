@@ -3,7 +3,6 @@ import {
     IsIn,
     IsInt,
     IsNotEmpty,
-    IsNumber,
     IsOptional,
     IsPositive,
     IsString,
@@ -20,7 +19,7 @@ export class AddMemberDto {
     username: string;
 
     @ApiProperty()
-    @IsNumber()
+    @IsInt()
     @IsNotEmpty()
     @IsIn([1, 2, 3, 4, 5], {
         message: 'The Role must be one of the following: 1, 2, 3, 4, 5',
