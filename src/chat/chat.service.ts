@@ -174,6 +174,11 @@ export class ChatService {
                         IsGroup: true,
                         KeyHash: true,
                         AvatarPath: true,
+                        ChatMembers: {
+                            select: {
+                                Member: true,
+                            },
+                        },
                     },
                 },
             },
