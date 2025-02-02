@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma.servise';
 import { ContactRequestsStatus } from '@prisma/client';
 
 import { AddContactResponseDto } from './dto/addContactResponse.dto';
+import { DeleteContactAndChatDto } from './dto/deleteContactAndChat.dto';
 
 @Injectable()
 export class ContactService {
@@ -178,12 +179,33 @@ export class ContactService {
         return userId;
     }
 
-    async DeleteContactRequest(userId: string) {
-        return userId;
-    }
+    async DeleteContactAndChat(dto: DeleteContactAndChatDto, userId: string) {
+        await this.DeleteContactAndChatValidation(dto, userId);
 
-    async CreateContact(userId: string) {
-        return userId;
+        await this.prisma.$transaction(async (prisma) => {
+            const chat = await prisma.contacts.delete({
+                where: { ContactId: dto.ContactId },
+                select: {
+                    ChatId: true,
+                },
+            });
+
+            await prisma.messages.deleteMany({
+                where: { ChatId: chat.ChatId },
+            });
+            await prisma.chatMembers.deleteMany({
+                where: { ChatId: chat.ChatId },
+            });
+            await prisma.chats.delete({
+                where: { ChatId: chat.ChatId },
+                include: {
+                    ChatMessages: true,
+                    ChatMembers: true,
+                },
+            });
+        });
+
+        return { message: 'successful' };
     }
 
     private async AddContactRequestValidation(
@@ -294,6 +316,26 @@ export class ContactService {
                 error: true,
                 show: true,
                 message: 'You are not the recipient of this request!',
+            });
+    }
+
+    private async DeleteContactAndChatValidation(
+        dto: DeleteContactAndChatDto,
+        userId: string,
+    ) {
+        const contact = await this.prisma.contacts.findUnique({
+            where: { ContactId: dto.ContactId },
+            select: {
+                UserId1: true,
+                UserId2: true,
+            },
+        });
+
+        if (userId !== contact.UserId1 && userId !== contact.UserId2)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'You are not contacts!',
             });
     }
 }
