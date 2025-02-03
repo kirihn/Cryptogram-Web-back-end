@@ -4,6 +4,7 @@ import { ContactRequestsStatus } from '@prisma/client';
 
 import { AddContactResponseDto } from './dto/addContactResponse.dto';
 import { DeleteContactAndChatDto } from './dto/deleteContactAndChat.dto';
+import { DeleteContactRequestDto } from './dto/deleteContactRequest.dto';
 
 @Injectable()
 export class ContactService {
@@ -121,62 +122,74 @@ export class ContactService {
         await this.AddContactResponseValidation(dto, userId);
 
         if (dto.NewContactRequestStatus === ContactRequestsStatus.accepted) {
-            const newContact = await this.prisma.$transaction(
-                async (prisma) => {
-                    const contactRequest = await prisma.contactRequests.delete({
-                        where: { ContactRequestId: dto.ContactRequestId },
-                        select: {
-                            UserRecipientId: true,
-                            UserSenderId: true,
-                        },
-                    });
-                    const chat = await prisma.chats.create({
-                        data: {
-                            ChatName: 'Personal Chat',
-                            IsGroup: false,
-                            KeyHash: 'none',
-                        },
-                    });
-                    await prisma.chatMembers.create({
-                        data: {
-                            UserId: contactRequest.UserRecipientId,
-                            ChatId: chat.ChatId,
-                            Role: 4,
-                        },
-                    });
-                    await prisma.chatMembers.create({
-                        data: {
-                            UserId: contactRequest.UserSenderId,
-                            ChatId: chat.ChatId,
-                            Role: 4,
-                        },
-                    });
-
-                    const contact = await prisma.contacts.create({
-                        data: {
-                            UserId1: contactRequest.UserRecipientId,
-                            UserId2: contactRequest.UserSenderId,
-                            ChatId: chat.ChatId,
-                        },
-                    });
-                    return contact;
-                },
-            );
-            return newContact;
-        } else if (
-            dto.NewContactRequestStatus === ContactRequestsStatus.blocked
-        ) {
-            const updatedContactRequest =
-                await this.prisma.contactRequests.update({
+            await this.prisma.$transaction(async (prisma) => {
+                const contactRequest = await prisma.contactRequests.delete({
                     where: { ContactRequestId: dto.ContactRequestId },
+                    select: {
+                        UserRecipientId: true,
+                        UserSenderId: true,
+                    },
+                });
+                const chat = await prisma.chats.create({
                     data: {
-                        Status: ContactRequestsStatus.blocked,
+                        ChatName: 'Personal Chat',
+                        IsGroup: false,
+                        KeyHash: 'none',
+                    },
+                });
+                await prisma.chatMembers.create({
+                    data: {
+                        UserId: contactRequest.UserRecipientId,
+                        ChatId: chat.ChatId,
+                        Role: 4,
+                    },
+                });
+                await prisma.chatMembers.create({
+                    data: {
+                        UserId: contactRequest.UserSenderId,
+                        ChatId: chat.ChatId,
+                        Role: 4,
                     },
                 });
 
-            return updatedContactRequest;
+                const contact = await prisma.contacts.create({
+                    data: {
+                        UserId1: contactRequest.UserRecipientId,
+                        UserId2: contactRequest.UserSenderId,
+                        ChatId: chat.ChatId,
+                    },
+                });
+                return contact;
+            });
+            return { message: 'successful', status: 'accepted' };
+        } else if (
+            dto.NewContactRequestStatus === ContactRequestsStatus.blocked
+        ) {
+            await this.prisma.contactRequests.update({
+                where: { ContactRequestId: dto.ContactRequestId },
+                data: {
+                    Status: ContactRequestsStatus.blocked,
+                },
+            });
+
+            return { message: 'successful', status: 'blocked' };
         }
-        return userId;
+        throw new BadRequestException({
+            error: true,
+            show: false,
+            message: 'Error in AddContactResponse!',
+        });
+    }
+
+    async DeleteContactRequest(dto: DeleteContactRequestDto, userId: string) {
+        console.log(213123);
+        await this.DeleteContactRequestValidation(dto, userId);
+
+        await this.prisma.contactRequests.delete({
+            where: { ContactRequestId: dto.ContactRequestId },
+        });
+
+        return { message: 'successful' };
     }
 
     async DeleteContactAndChat(dto: DeleteContactAndChatDto, userId: string) {
@@ -336,6 +349,25 @@ export class ContactService {
                 error: true,
                 show: true,
                 message: 'You are not contacts!',
+            });
+    }
+
+    private async DeleteContactRequestValidation(
+        dto: DeleteContactRequestDto,
+        userId: string,
+    ) {
+        const contactRequest = await this.prisma.contactRequests.findUnique({
+            where: { ContactRequestId: dto.ContactRequestId },
+            select: {
+                UserSenderId: true,
+            },
+        });
+
+        if (contactRequest.UserSenderId !== userId)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'It isnt your contact request!',
             });
     }
 }

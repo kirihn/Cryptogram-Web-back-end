@@ -15,6 +15,7 @@ import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { ContactService } from './contact.service';
 import { AddContactResponseDto } from './dto/addContactResponse.dto';
 import { DeleteContactAndChatDto } from './dto/deleteContactAndChat.dto';
+import { DeleteContactRequestDto } from './dto/deleteContactRequest.dto';
 
 @Controller('contact')
 export class ContactController {
@@ -51,6 +52,16 @@ export class ContactController {
         @CurrentUser('UserId') userId: string,
     ) {
         return this.contactService.AddContactResponse(dto, userId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Auth()
+    @Put('deleteContactRequest')
+    async DeleteContactRequest(
+        @Body() dto: DeleteContactRequestDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.contactService.DeleteContactRequest(dto, userId);
     }
 
     @UsePipes(new ValidationPipe())

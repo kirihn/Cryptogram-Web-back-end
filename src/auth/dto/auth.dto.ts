@@ -4,14 +4,14 @@ import { IsEmail, IsString, MinLength } from 'class-validator';
 export class AuthDto {
     @ApiProperty({
         description: 'User email',
-        example: 'Swagger@Swagger.com',
+        example: 'Swagger@mail.ru',
     })
     @IsEmail()
     email: string;
 
     @ApiProperty({
         description: 'User password',
-        example: '2384',
+        example: '23842384',
     })
     @IsString()
     @MinLength(8, {
