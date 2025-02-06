@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.servise';
 import { ContactRequestsStatus } from '@prisma/client';
+import { CryptogramGateway } from 'src/webSocket/cryptogram.gateway';
 
 import { AddContactResponseDto } from './dto/addContactResponse.dto';
 import { DeleteContactAndChatDto } from './dto/deleteContactAndChat.dto';
@@ -9,7 +10,10 @@ import { AddContactRequestByUsernameDto } from './dto/addContactRequestByUsernam
 
 @Injectable()
 export class ContactService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private prisma: PrismaService,
+        private readonly wsGateway: CryptogramGateway,
+    ) {}
 
     async GetMyContacts(userId: string) {
         const contacts = await this.prisma.users.findUnique({
@@ -116,6 +120,9 @@ export class ContactService {
             },
         });
 
+        this.wsGateway.AddNewContactRequest(userRecipientId);
+        this.wsGateway.AddNewContactRequest(userId);
+
         return { message: 'successful' };
     }
 
@@ -144,45 +151,56 @@ export class ContactService {
         await this.AddContactResponseValidation(dto, userId);
 
         if (dto.NewContactRequestStatus === ContactRequestsStatus.accepted) {
-            await this.prisma.$transaction(async (prisma) => {
-                const contactRequest = await prisma.contactRequests.delete({
-                    where: { ContactRequestId: dto.ContactRequestId },
-                    select: {
-                        UserRecipientId: true,
-                        UserSenderId: true,
-                    },
-                });
-                const chat = await prisma.chats.create({
-                    data: {
-                        ChatName: 'Personal Chat',
-                        IsGroup: false,
-                        KeyHash: 'none',
-                    },
-                });
-                await prisma.chatMembers.create({
-                    data: {
-                        UserId: contactRequest.UserRecipientId,
-                        ChatId: chat.ChatId,
-                        Role: 4,
-                    },
-                });
-                await prisma.chatMembers.create({
-                    data: {
-                        UserId: contactRequest.UserSenderId,
-                        ChatId: chat.ChatId,
-                        Role: 4,
-                    },
-                });
+            const newContact = await this.prisma.$transaction(
+                async (prisma) => {
+                    const contactRequest = await prisma.contactRequests.delete({
+                        where: { ContactRequestId: dto.ContactRequestId },
+                        select: {
+                            UserRecipientId: true,
+                            UserSenderId: true,
+                        },
+                    });
+                    const chat = await prisma.chats.create({
+                        data: {
+                            ChatName: 'Personal Chat',
+                            IsGroup: false,
+                            KeyHash: 'none',
+                        },
+                    });
+                    await prisma.chatMembers.create({
+                        data: {
+                            UserId: contactRequest.UserRecipientId,
+                            ChatId: chat.ChatId,
+                            Role: 4,
+                        },
+                    });
+                    await prisma.chatMembers.create({
+                        data: {
+                            UserId: contactRequest.UserSenderId,
+                            ChatId: chat.ChatId,
+                            Role: 4,
+                        },
+                    });
 
-                const contact = await prisma.contacts.create({
-                    data: {
-                        UserId1: contactRequest.UserRecipientId,
-                        UserId2: contactRequest.UserSenderId,
-                        ChatId: chat.ChatId,
-                    },
-                });
-                return contact;
-            });
+                    const contact = await prisma.contacts.create({
+                        data: {
+                            UserId1: contactRequest.UserRecipientId,
+                            UserId2: contactRequest.UserSenderId,
+                            ChatId: chat.ChatId,
+                        },
+                    });
+                    return contact;
+                },
+            );
+
+            this.wsGateway.AddNewContact(newContact.UserId1);
+            this.wsGateway.DeleteContactRequest(newContact.UserId1);
+            this.wsGateway.AddUserToChat(newContact.UserId1);
+
+            this.wsGateway.AddNewContact(newContact.UserId2);
+            this.wsGateway.DeleteContactRequest(newContact.UserId2);
+            this.wsGateway.AddUserToChat(newContact.UserId2);
+
             return { message: 'successful', status: 'accepted' };
         } else if (
             dto.NewContactRequestStatus === ContactRequestsStatus.blocked
@@ -204,12 +222,18 @@ export class ContactService {
     }
 
     async DeleteContactRequest(dto: DeleteContactRequestDto, userId: string) {
-        console.log(213123);
         await this.DeleteContactRequestValidation(dto, userId);
 
-        await this.prisma.contactRequests.delete({
+        const deletedRequest = await this.prisma.contactRequests.delete({
             where: { ContactRequestId: dto.ContactRequestId },
+            select: {
+                UserRecipientId: true,
+                UserSenderId: true,
+            },
         });
+
+        this.wsGateway.DeleteContactRequest(deletedRequest.UserRecipientId);
+        this.wsGateway.DeleteContactRequest(deletedRequest.UserSenderId);
 
         return { message: 'successful' };
     }
@@ -217,11 +241,13 @@ export class ContactService {
     async DeleteContactAndChat(dto: DeleteContactAndChatDto, userId: string) {
         await this.DeleteContactAndChatValidation(dto, userId);
 
-        await this.prisma.$transaction(async (prisma) => {
+        const chat = await this.prisma.$transaction(async (prisma) => {
             const chat = await prisma.contacts.delete({
                 where: { ContactId: dto.ContactId },
                 select: {
                     ChatId: true,
+                    UserId1: true,
+                    UserId2: true,
                 },
             });
 
@@ -238,7 +264,15 @@ export class ContactService {
                     ChatMembers: true,
                 },
             });
+
+            return chat;
         });
+
+        this.wsGateway.DeleteContact(chat.UserId1);
+        this.wsGateway.DeleteUserFromChat(chat.UserId1, chat.ChatId);
+
+        this.wsGateway.DeleteContact(chat.UserId2);
+        this.wsGateway.DeleteUserFromChat(chat.UserId2, chat.ChatId);
 
         return { message: 'successful' };
     }

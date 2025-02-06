@@ -122,4 +122,28 @@ export class CryptogramGateway
             });
         }
     }
+
+    async AddNewContact(userId: string) {
+        const socketId = this.connectedClients.get(userId);
+
+        if (socketId) this.server.to(socketId).emit('addNewContact');
+    }
+
+    async DeleteContact(userId: string) {
+        const socketId = this.connectedClients.get(userId);
+
+        if (socketId) this.server.to(socketId).emit('deleteContact');
+    }
+
+    async AddNewContactRequest(userId: string) {
+        const socketId = this.connectedClients.get(userId);
+
+        if (socketId) this.server.to(socketId).emit('addNewContactRequest');
+    }
+
+    async DeleteContactRequest(userId: string) {
+        const socketId = this.connectedClients.get(userId);
+
+        if (socketId) this.server.to(socketId).emit('deleteContactRequest');
+    }
 }
