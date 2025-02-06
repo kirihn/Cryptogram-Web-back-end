@@ -16,6 +16,7 @@ import { ContactService } from './contact.service';
 import { AddContactResponseDto } from './dto/addContactResponse.dto';
 import { DeleteContactAndChatDto } from './dto/deleteContactAndChat.dto';
 import { DeleteContactRequestDto } from './dto/deleteContactRequest.dto';
+import { AddContactRequestByUsernameDto } from './dto/addContactRequestByUsername.dto';
 
 @Controller('contact')
 export class ContactController {
@@ -42,6 +43,16 @@ export class ContactController {
         userId: string,
     ) {
         return this.contactService.AddContactRequest(userRecipientId, userId);
+    }
+
+    @UsePipes(new ValidationPipe())
+    @Auth()
+    @Post('addContactRequestByUsername')
+    async AddContactRequestByUsername(
+        @Body() dto: AddContactRequestByUsernameDto,
+        @CurrentUser('UserId') userId: string,
+    ) {
+        return this.contactService.AddContactRequestByUsername(dto, userId);
     }
 
     @UsePipes(new ValidationPipe())

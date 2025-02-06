@@ -5,6 +5,7 @@ import { ContactRequestsStatus } from '@prisma/client';
 import { AddContactResponseDto } from './dto/addContactResponse.dto';
 import { DeleteContactAndChatDto } from './dto/deleteContactAndChat.dto';
 import { DeleteContactRequestDto } from './dto/deleteContactRequest.dto';
+import { AddContactRequestByUsernameDto } from './dto/addContactRequestByUsername.dto';
 
 @Injectable()
 export class ContactService {
@@ -116,6 +117,27 @@ export class ContactService {
         });
 
         return { message: 'successful' };
+    }
+
+    async AddContactRequestByUsername(
+        dto: AddContactRequestByUsernameDto,
+        userId: string,
+    ) {
+        const userRecipient = await this.prisma.users.findUnique({
+            where: { UserName: dto.username },
+            select: {
+                UserId: true,
+            },
+        });
+
+        if (!userRecipient)
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'User not found!',
+            });
+
+        return await this.AddContactRequest(userRecipient.UserId, userId);
     }
 
     async AddContactResponse(dto: AddContactResponseDto, userId: string) {
