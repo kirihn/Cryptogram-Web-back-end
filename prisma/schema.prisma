@@ -96,6 +96,7 @@ model StickerGroup {
 model Stickers {
   StickerId      Int          @id @default(autoincrement())
   StickerGroupId Int
+  StickerPath String
   StickerGroup   StickerGroup @relation(fields: [StickerGroupId], references: [StickerGroupId])
 }
 

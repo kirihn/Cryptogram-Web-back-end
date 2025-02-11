@@ -165,9 +165,15 @@ export class ChatController {
     }
 
     /////////////////// time func
-    @Get('updateStickerDB')
+    // @Get('updateStickerDB')
+    // @Auth()
+    // async UpdateStickerDB() {
+    //     return this.chatService.UpdateStickerDB();
+    // }
+
+    @Get('getAllStickers')
     @Auth()
-    async UpdateStickerDB() {
-        return this.chatService.UpdateStickerDB();
+    async GetAllStickers() {
+        return this.chatService.GetAllStickers();
     }
 }

@@ -411,8 +411,7 @@ export class ChatService {
         return { message: 'successful' };
     }
 
-    ///////////////////////
-    async UpdateStickerDB() {
+    async GetStickerData() {
         try {
             const stickerPacks = [];
             const stickerFolderPath = path.join(
@@ -420,35 +419,36 @@ export class ChatService {
                 '../..',
                 'static/stickers',
             );
+
             const stickerPacksFolder = fs.readdirSync(stickerFolderPath, {
                 withFileTypes: true,
             });
 
-            for (let i = 0; i < stickerPacksFolder.length; i++) {
+            for (const pack of stickerPacksFolder) {
                 const stickerPackPathForUser = path.join(
                     'static/stickers',
-                    stickerPacksFolder[i].name,
+                    pack.name,
                 );
                 const newStickerPack: StickerPack = {
-                    name: stickerPacksFolder[i].name,
+                    name: pack.name,
                     stickers: [],
                 };
 
-                const newStickerPackFolder = fs.readdirSync(
-                    path.join(stickerFolderPath, newStickerPack.name),
-                    { withFileTypes: true },
+                const stickerPackFullPath = path.join(
+                    stickerFolderPath,
+                    newStickerPack.name,
                 );
-                console.log(path.join(stickerFolderPath, newStickerPack.name));
-                console.log(newStickerPackFolder);
+                const stickerFiles = fs.readdirSync(stickerPackFullPath, {
+                    withFileTypes: true,
+                });
 
-                for (let j = 0; j < newStickerPackFolder.length; j++) {
-                    console.log('Объект:', newStickerPackFolder[j]);
-                    if (newStickerPackFolder[j].isFile()) {
+                for (const file of stickerFiles) {
+                    if (file.isFile()) {
                         const newSticker: Sticker = {
-                            name: newStickerPackFolder[j].name,
+                            name: file.name,
                             pathforUser: path.join(
                                 stickerPackPathForUser,
-                                newStickerPackFolder[j].name,
+                                file.name,
                             ),
                         };
                         newStickerPack.stickers.push(newSticker);
@@ -462,7 +462,47 @@ export class ChatService {
         } catch (err) {
             throw new BadRequestException(err);
         }
-        return true;
+    }
+
+    async UpdateStickerDB() {
+        const stickerPacks: StickerPack[] = await this.GetStickerData();
+
+        this.prisma.$transaction(async () => {
+            await this.prisma.stickers.deleteMany();
+            await this.prisma.stickerGroup.deleteMany();
+
+            for (const stickerPack of stickerPacks) {
+                const newStickerGroup = await this.prisma.stickerGroup.create({
+                    data: { GroupName: stickerPack.name },
+                });
+
+                for (const sticker of stickerPack.stickers) {
+                    await this.prisma.stickers.create({
+                        data: {
+                            StickerGroupId: newStickerGroup.StickerGroupId,
+                            StickerPath: sticker.pathforUser,
+                        },
+                    });
+                }
+            }
+        });
+
+        return { message: 'successful' };
+    }
+
+    async GetAllStickers() {
+        return await this.prisma.stickerGroup.findMany({
+            select: {
+                StickerGroupId: true,
+                GroupName: true,
+                Stickers: {
+                    select: {
+                        StickerId: true,
+                        StickerPath: true,
+                    },
+                },
+            },
+        });
     }
 
     private async GetChatMembers(chatId: number) {
