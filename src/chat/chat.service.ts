@@ -3,9 +3,10 @@ import {
     ForbiddenException,
     Injectable,
 } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
 import { PrismaService } from 'src/prisma.servise';
 import { CryptogramGateway } from 'src/webSocket/cryptogram.gateway';
-import * as fs from 'fs';
 
 import { CreateChatDto } from './dto/createChat.dto';
 import { AddMemberDto } from './dto/addMember.dto';
@@ -17,6 +18,7 @@ import { ChatMessage, NewMessageDto } from './dto/chatMessage.dto';
 import { UpdateChatNameDto } from './dto/updateChatName.dto';
 import { DeleteMessageDto } from './dto/deleteMessage.dto';
 import { UpdateMessageDto } from './dto/updateMessage.dto';
+import { Sticker, StickerPack } from './dto/stickerPack';
 
 @Injectable()
 export class ChatService {
@@ -407,6 +409,60 @@ export class ChatService {
         });
 
         return { message: 'successful' };
+    }
+
+    ///////////////////////
+    async UpdateStickerDB() {
+        try {
+            const stickerPacks = [];
+            const stickerFolderPath = path.join(
+                __dirname,
+                '../..',
+                'static/stickers',
+            );
+            const stickerPacksFolder = fs.readdirSync(stickerFolderPath, {
+                withFileTypes: true,
+            });
+
+            for (let i = 0; i < stickerPacksFolder.length; i++) {
+                const stickerPackPathForUser = path.join(
+                    'static/stickers',
+                    stickerPacksFolder[i].name,
+                );
+                const newStickerPack: StickerPack = {
+                    name: stickerPacksFolder[i].name,
+                    stickers: [],
+                };
+
+                const newStickerPackFolder = fs.readdirSync(
+                    path.join(stickerFolderPath, newStickerPack.name),
+                    { withFileTypes: true },
+                );
+                console.log(path.join(stickerFolderPath, newStickerPack.name));
+                console.log(newStickerPackFolder);
+
+                for (let j = 0; j < newStickerPackFolder.length; j++) {
+                    console.log('Объект:', newStickerPackFolder[j]);
+                    if (newStickerPackFolder[j].isFile()) {
+                        const newSticker: Sticker = {
+                            name: newStickerPackFolder[j].name,
+                            pathforUser: path.join(
+                                stickerPackPathForUser,
+                                newStickerPackFolder[j].name,
+                            ),
+                        };
+                        newStickerPack.stickers.push(newSticker);
+                    }
+                }
+
+                stickerPacks.push(newStickerPack);
+            }
+
+            return stickerPacks;
+        } catch (err) {
+            throw new BadRequestException(err);
+        }
+        return true;
     }
 
     private async GetChatMembers(chatId: number) {

@@ -146,4 +146,34 @@ export class CryptogramGateway
 
         if (socketId) this.server.to(socketId).emit('deleteContactRequest');
     }
+
+    // function getDirectoryTree(dirPath: string): any {
+    //     const result = [];
+
+    //     try {
+    //       const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+    //       for (const entry of entries) {
+    //         const fullPath = path.join(dirPath, entry.name);
+    //         if (entry.isDirectory()) {
+    //           result.push({
+    //             name: entry.name,
+    //             path: fullPath,
+    //             type: 'directory',
+    //             children: getDirectoryTree(fullPath),
+    //           });
+    //         } else {
+    //           result.push({
+    //             name: entry.name,
+    //             path: fullPath,
+    //             type: 'file',
+    //           });
+    //         }
+    //       }
+    //     } catch (err) {
+    //       console.error(`Ошибка при чтении директории ${dirPath}: ${err.message}`);
+    //     }
+
+    //     return result;
+    //   }
 }
