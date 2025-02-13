@@ -124,6 +124,7 @@ export class ChatController {
 
     @UsePipes(new ValidationPipe())
     @Post('uploadAvatar')
+    @CheckChatRole(1, 2, 3)
     @Auth()
     @UseInterceptors(FileInterceptor('avatar'))
     async UpdateAvatar(
@@ -137,10 +138,25 @@ export class ChatController {
     }
 
     @UsePipes(new ValidationPipe())
+    @Post('uploadChatFile')
+    @CheckChatRole(1, 2, 3, 4)
+    @Auth()
+    @UseInterceptors(FileInterceptor('file'))
+    async UploadFile(
+        @UploadedFile(new FileValidationPipe(30000, /.*$/i))
+        file: Express.Multer.File,
+        @CurrentUser('UserId') userId: string,
+        @Query('chatId', new ValidationPipe({ transform: true }))
+        chatId: number,
+    ) {
+        return this.chatService.UploadChatFile(file, userId, chatId);
+    }
+
+    @UsePipes(new ValidationPipe())
     @Put('updateChatName')
     @CheckChatRole(1, 2, 3)
     @Auth()
-    UpdateChatName(@Body() dto: UpdateChatNameDto) {
+    async UpdateChatName(@Body() dto: UpdateChatNameDto) {
         return this.chatService.UpdateChatName(dto);
     }
 

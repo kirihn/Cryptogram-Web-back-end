@@ -18,6 +18,11 @@ import { ContactModule } from './contact/contact.module';
             serveRoot: '/static',
         }),
         ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '..', 'userUploads'),
+            serveRoot: '/userUploads',
+            //exclude: ['/api*'],
+        }),
+        ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'react'),
             //exclude: ['/api*'],
         }),

@@ -24,9 +24,10 @@ export class ChatRoleGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
 
         const user = request.user;
+        console.log(user);
         const userId: string = user.UserId;
 
-        const chatId = request.body.chatId;
+        const chatId = request.body.chatId || Number(request.query.chatId);
 
         if (!chatId || !user)
             throw new ForbiddenException({

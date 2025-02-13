@@ -306,7 +306,7 @@ export class ChatService {
         userId: string,
         chatId: number,
     ) {
-        this.ValidateUpdateAvatar(userId, chatId);
+        // this.ValidateUpdateAvatar(userId, chatId);
 
         const uploadDir = 'static/uploads/chatAvatars';
 
@@ -323,13 +323,12 @@ export class ChatService {
             file.mimetype.indexOf('/') + 1,
         );
         const fileName = 'chatId-' + chatId + '.' + FileType;
-        let filePath = `${uploadDir}/${fileName}`;
+        const filePath = `${uploadDir}/${fileName}`;
 
         try {
             fs.writeFileSync(filePath, file.buffer);
             console.log('Аватар чата загружен!');
         } catch (err) {
-            filePath = 'uploads/default-avatar.png';
             throw new Error('Ошибка загрузки аватара: ' + err.message);
         }
 
@@ -341,6 +340,58 @@ export class ChatService {
         });
 
         return chat;
+    }
+
+    async UploadChatFile(
+        file: Express.Multer.File,
+        userId: string,
+        chatId: number,
+    ) {
+        const uploadDir = 'userUploads/chatFiles';
+
+        if (!fs.existsSync(uploadDir)) {
+            throw new BadRequestException({
+                error: true,
+                show: false,
+                message:
+                    'server upload file error (no userUploads/chatFiles Directory)',
+            });
+        }
+
+        const fileName = 'Time-' + Date.now() + 'EndTime' + file.originalname;
+
+        const filePath = path.join(uploadDir, `chatId-${chatId}`);
+        const fullFilePath = path.join(filePath, fileName);
+
+        try {
+            fs.mkdirSync(filePath, { recursive: true });
+            fs.writeFileSync(fullFilePath, file.buffer);
+        } catch (err) {
+            throw new Error('Ошибка загрузки аватара: ' + err.message);
+        }
+        let messageType: string;
+
+        switch (file.mimetype.split('/')[0]) {
+            case 'image':
+                messageType = 'image';
+                break;
+            case 'video':
+                messageType = 'video';
+                break;
+            case 'audio':
+                messageType = 'audio';
+                break;
+            default:
+                messageType = 'file';
+        }
+
+        const dto: NewMessageDto = {
+            content: fullFilePath,
+            chatId: chatId,
+            messageType: messageType,
+        };
+
+        return await this.AddMessage(dto, userId);
     }
 
     async UpdateChatName(dto: UpdateChatNameDto) {
@@ -364,9 +415,21 @@ export class ChatService {
             },
             select: {
                 ChatId: true,
+                MessageType: true,
+                Content: true,
             },
         });
 
+        if (
+            chat.MessageType == 'file' ||
+            chat.MessageType == 'video' ||
+            chat.MessageType == 'image' ||
+            chat.MessageType == 'audio'
+        ) {
+            if (fs.existsSync(chat.Content)) {
+                fs.unlinkSync(chat.Content);
+            }
+        }
         const chatMembers = await this.GetChatMembers(chat.ChatId);
 
         chatMembers.ChatMembers.forEach((member) => {

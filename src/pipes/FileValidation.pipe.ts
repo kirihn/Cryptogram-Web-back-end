@@ -12,9 +12,11 @@ export class FileValidationPipe implements PipeTransform {
 
     transform(value: any) {
         if (!value || typeof value.size !== 'number' || !value.originalname) {
-            throw new BadRequestException(
-                'Файл не найден или не имеет формат.',
-            );
+            throw new BadRequestException({
+                error: true,
+                show: false,
+                message: 'Файл не найден или не имеет формат.',
+            });
         }
 
         if (value.size > this.maxFileSize) {
