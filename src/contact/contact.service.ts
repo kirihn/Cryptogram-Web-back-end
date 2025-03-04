@@ -400,6 +400,14 @@ export class ContactService {
             },
         });
 
+        if (!contact) {
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'Contact dosent exist!',
+            });
+        }
+
         if (userId !== contact.UserId1 && userId !== contact.UserId2)
             throw new BadRequestException({
                 error: true,
@@ -412,12 +420,24 @@ export class ContactService {
         dto: DeleteContactRequestDto,
         userId: string,
     ) {
+        console.log(111111);
+        console.log(dto.ContactRequestId);
+        console.log(111111);
+
         const contactRequest = await this.prisma.contactRequests.findUnique({
             where: { ContactRequestId: dto.ContactRequestId },
             select: {
                 UserSenderId: true,
             },
         });
+
+        if (!contactRequest) {
+            throw new BadRequestException({
+                error: true,
+                show: true,
+                message: 'Contactrequest dosent exist!',
+            });
+        }
 
         if (contactRequest.UserSenderId !== userId)
             throw new BadRequestException({
