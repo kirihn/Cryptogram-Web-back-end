@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, Matches } from 'class-validator';
+import { IsNotEmpty, Matches, MaxLength } from 'class-validator';
 
 export class UpdateUserNameDto {
     @ApiProperty()
@@ -8,5 +8,6 @@ export class UpdateUserNameDto {
         message:
             'The user name can contain only English letters, numbers, and underscores',
     })
+    @MaxLength(20, { message: 'Max length of username is 20 charachters' })
     username: string;
 }
