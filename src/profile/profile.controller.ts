@@ -75,7 +75,7 @@ export class ProfileController {
     @Post('uploadAvatar')
     @UseInterceptors(FileInterceptor('avatar'))
     async UpdateAvatar(
-        @UploadedFile(new FileValidationPipe(1000, /\.(jpg|jpeg|png|gif)$/i))
+        @UploadedFile(new FileValidationPipe(10000, /\.(jpg|jpeg|png|gif)$/i))
         file: Express.Multer.File,
         @CurrentUser('UserId') userId: string,
     ) {

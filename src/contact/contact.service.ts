@@ -205,13 +205,19 @@ export class ContactService {
         } else if (
             dto.NewContactRequestStatus === ContactRequestsStatus.blocked
         ) {
-            await this.prisma.contactRequests.update({
+            const contactRequest = await this.prisma.contactRequests.update({
                 where: { ContactRequestId: dto.ContactRequestId },
                 data: {
                     Status: ContactRequestsStatus.blocked,
                 },
             });
 
+            this.wsGateway.ChangeStatusContactRequest(
+                contactRequest.UserSenderId,
+            );
+            this.wsGateway.ChangeStatusContactRequest(
+                contactRequest.UserRecipientId,
+            );
             return { message: 'successful', status: 'blocked' };
         }
         throw new BadRequestException({

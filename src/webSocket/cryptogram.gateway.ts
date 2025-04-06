@@ -146,4 +146,11 @@ export class CryptogramGateway
 
         if (socketId) this.server.to(socketId).emit('deleteContactRequest');
     }
+
+    async ChangeStatusContactRequest(userId: string) {
+        const socketId = this.connectedClients.get(userId);
+
+        if (socketId)
+            this.server.to(socketId).emit('changeStatusContactRequest');
+    }
 }
