@@ -358,7 +358,11 @@ export class ChatService {
             });
         }
 
-        const fileName = 'Time-' + Date.now() + 'EndTime' + file.originalname;
+        const fileName =
+            'Time-' +
+            Date.now() +
+            'EndTime' +
+            Buffer.from(file.originalname, 'latin1').toString('utf8');
 
         const filePath = path.join(uploadDir, `chatId-${chatId}`);
         const fullFilePath = path.join(filePath, fileName);

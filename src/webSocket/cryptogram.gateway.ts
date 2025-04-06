@@ -17,7 +17,7 @@ export class CryptogramGateway
     @WebSocketServer()
     server: Server;
 
-    private connectedClients = new Map<string, string>();
+    private connectedClients = new Map<string, Set<string>>();
 
     constructor(
         private readonly jwtService: JwtService,
@@ -45,42 +45,59 @@ export class CryptogramGateway
                 throw new Error('Invalid token payload');
             }
 
-            this.connectedClients.set(userId, client.id);
+            if (this.connectedClients.has(userId)) {
+                this.connectedClients.get(userId)?.add(client.id);
+            } else {
+                this.connectedClients.set(userId, new Set());
+            }
         } catch (error) {
             client.disconnect();
-            console.log('ConnectError - ' + error);
+            console.log('WS Connect Error - ' + error);
         }
     }
 
     handleDisconnect(client: Socket) {
         const userId = [...this.connectedClients.entries()].find(
-            ([, socketId]) => socketId === client.id,
+            ([, socketIds]) => socketIds.has(client.id),
         )?.[0];
 
         if (userId) {
-            this.connectedClients.delete(userId);
+            this.connectedClients.get(userId)?.delete(client.id);
+
+            if (this.connectedClients.get(userId)?.size === 0) {
+                this.connectedClients.delete(userId);
+            }
         }
+    }
+
+    async SendSignal(userId: string, message: string, body?: any) {
+        const socketIdSet = this.connectedClients.get(userId);
+
+        socketIdSet.forEach((socketId) => {
+            if (socketId) {
+                this.server.to(socketId).emit(message, body);
+            }
+        });
     }
 
     async AddUserToChat(userId: string) {
-        const socketId = this.connectedClients.get(userId);
-
-        if (socketId) {
-            this.server
-                .to(socketId)
-                .emit('addUserToChat', { message: 'updateChatPanel' });
-        }
+        this.SendSignal(userId, 'addUserToChat', {
+            message: 'updateChatPanel',
+        });
     }
 
     async DeleteUserFromChat(userId: string, deletedChatId: number) {
-        const socketId = this.connectedClients.get(userId);
+        this.SendSignal(userId, 'deleteUserFromChat', {
+            message: 'updateChatPanel',
+            deletedChatId,
+        });
 
-        if (socketId) {
-            this.server.to(socketId).emit('deleteUserFromChat', {
-                message: 'updateChatPanel',
-                deletedChatId,
-            });
-        }
+        // if (socketId) {
+        //     this.server.to(socketId).emit('deleteUserFromChat', {
+        //         message: 'updateChatPanel',
+        //         deletedChatId,
+        //     });
+        // }
     }
 
     async SendMessageToUser(
@@ -88,10 +105,11 @@ export class CryptogramGateway
         userId: string,
         chatId: number,
     ) {
-        const socketId = this.connectedClients.get(userId);
-        if (socketId) {
-            this.server.to(socketId).emit('NewMessage', { message, chatId });
-        }
+        this.SendSignal(userId, 'NewMessage', { message, chatId });
+
+        // if (socketId) {
+        //     this.server.to(socketId).emit('NewMessage', { message, chatId });
+        // }
     }
 
     async DeleteMessageToUser(
@@ -99,12 +117,13 @@ export class CryptogramGateway
         userId: string,
         chatId: number,
     ) {
-        const socketId = this.connectedClients.get(userId);
-        if (socketId) {
-            this.server
-                .to(socketId)
-                .emit('DeleteMessage', { deletedMessageId, chatId });
-        }
+        this.SendSignal(userId, 'DeleteMessage', { deletedMessageId, chatId });
+
+        // if (socketId) {
+        //     this.server
+        //         .to(socketId)
+        //         .emit('DeleteMessage', { deletedMessageId, chatId });
+        // }
     }
 
     async UpdateMessageToUser(
@@ -113,44 +132,49 @@ export class CryptogramGateway
         chatId: number,
         newContent: string,
     ) {
-        const socketId = this.connectedClients.get(userId);
-        if (socketId) {
-            this.server.to(socketId).emit('UpdateMessage', {
-                updatedMessageId,
-                chatId,
-                newContent,
-            });
-        }
+        this.SendSignal(userId, 'UpdateMessage', {
+            updatedMessageId,
+            chatId,
+            newContent,
+        });
+
+        // if (socketId) {
+        //     this.server.to(socketId).emit('UpdateMessage', {
+        //         updatedMessageId,
+        //         chatId,
+        //         newContent,
+        //     });
+        // }
     }
 
     async AddNewContact(userId: string) {
-        const socketId = this.connectedClients.get(userId);
+        this.SendSignal(userId, 'addNewContact');
 
-        if (socketId) this.server.to(socketId).emit('addNewContact');
+        // if (socketId) this.server.to(socketId).emit('addNewContact');
     }
 
     async DeleteContact(userId: string) {
-        const socketId = this.connectedClients.get(userId);
+        this.SendSignal(userId, 'deleteContact');
 
-        if (socketId) this.server.to(socketId).emit('deleteContact');
+        // if (socketId) this.server.to(socketId).emit('deleteContact');
     }
 
     async AddNewContactRequest(userId: string) {
-        const socketId = this.connectedClients.get(userId);
+        this.SendSignal(userId, 'addNewContactRequest');
 
-        if (socketId) this.server.to(socketId).emit('addNewContactRequest');
+        // if (socketId) this.server.to(socketId).emit('addNewContactRequest');
     }
 
     async DeleteContactRequest(userId: string) {
-        const socketId = this.connectedClients.get(userId);
+        this.SendSignal(userId, 'deleteContactRequest');
 
-        if (socketId) this.server.to(socketId).emit('deleteContactRequest');
+        // if (socketId) this.server.to(socketId).emit('deleteContactRequest');
     }
 
     async ChangeStatusContactRequest(userId: string) {
-        const socketId = this.connectedClients.get(userId);
+        this.SendSignal(userId, 'changeStatusContactRequest');
 
-        if (socketId)
-            this.server.to(socketId).emit('changeStatusContactRequest');
+        // if (socketId)
+        //     this.server.to(socketId).emit('changeStatusContactRequest');
     }
 }
