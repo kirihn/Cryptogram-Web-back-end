@@ -2,6 +2,7 @@ import { JwtService } from '@nestjs/jwt';
 import {
     OnGatewayConnection,
     OnGatewayDisconnect,
+    SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
 } from '@nestjs/websockets';
@@ -91,13 +92,6 @@ export class CryptogramGateway
             message: 'updateChatPanel',
             deletedChatId,
         });
-
-        // if (socketId) {
-        //     this.server.to(socketId).emit('deleteUserFromChat', {
-        //         message: 'updateChatPanel',
-        //         deletedChatId,
-        //     });
-        // }
     }
 
     async SendMessageToUser(
@@ -106,10 +100,6 @@ export class CryptogramGateway
         chatId: number,
     ) {
         this.SendSignal(userId, 'NewMessage', { message, chatId });
-
-        // if (socketId) {
-        //     this.server.to(socketId).emit('NewMessage', { message, chatId });
-        // }
     }
 
     async DeleteMessageToUser(
@@ -118,12 +108,6 @@ export class CryptogramGateway
         chatId: number,
     ) {
         this.SendSignal(userId, 'DeleteMessage', { deletedMessageId, chatId });
-
-        // if (socketId) {
-        //     this.server
-        //         .to(socketId)
-        //         .emit('DeleteMessage', { deletedMessageId, chatId });
-        // }
     }
 
     async UpdateMessageToUser(
@@ -137,44 +121,25 @@ export class CryptogramGateway
             chatId,
             newContent,
         });
-
-        // if (socketId) {
-        //     this.server.to(socketId).emit('UpdateMessage', {
-        //         updatedMessageId,
-        //         chatId,
-        //         newContent,
-        //     });
-        // }
     }
 
     async AddNewContact(userId: string) {
         this.SendSignal(userId, 'addNewContact');
-
-        // if (socketId) this.server.to(socketId).emit('addNewContact');
     }
 
     async DeleteContact(userId: string) {
         this.SendSignal(userId, 'deleteContact');
-
-        // if (socketId) this.server.to(socketId).emit('deleteContact');
     }
 
     async AddNewContactRequest(userId: string) {
         this.SendSignal(userId, 'addNewContactRequest');
-
-        // if (socketId) this.server.to(socketId).emit('addNewContactRequest');
     }
 
     async DeleteContactRequest(userId: string) {
         this.SendSignal(userId, 'deleteContactRequest');
-
-        // if (socketId) this.server.to(socketId).emit('deleteContactRequest');
     }
 
     async ChangeStatusContactRequest(userId: string) {
         this.SendSignal(userId, 'changeStatusContactRequest');
-
-        // if (socketId)
-        //     this.server.to(socketId).emit('changeStatusContactRequest');
     }
 }
