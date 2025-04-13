@@ -180,12 +180,12 @@ export class ChatController {
         return this.chatService.UpdateMessage(dto, userId);
     }
 
-    /////////////////// time func
-    // @Get('updateStickerDB')
-    // @Auth()
-    // async UpdateStickerDB() {
-    //     return this.chatService.UpdateStickerDB();
-    // }
+    ///////////////// time func
+    @Get('updateStickerDB')
+    @Auth()
+    async UpdateStickerDB() {
+        return this.chatService.UpdateStickerDB();
+    }
 
     @Get('getAllStickers')
     @Auth()
