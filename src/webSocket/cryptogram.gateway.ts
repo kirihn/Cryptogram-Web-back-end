@@ -74,11 +74,15 @@ export class CryptogramGateway
     async SendSignal(userId: string, message: string, body?: any) {
         const socketIdSet = this.connectedClients.get(userId);
 
-        socketIdSet.forEach((socketId) => {
-            if (socketId) {
-                this.server.to(socketId).emit(message, body);
-            }
-        });
+        if (socketIdSet) {
+            socketIdSet.forEach((socketId) => {
+                if (socketId) {
+                    this.server.to(socketId).emit(message, body);
+                }
+            });
+        } else {
+            console.error(`No socket IDs found for user: ${userId}`);
+        }
     }
 
     async AddUserToChat(userId: string) {
@@ -141,5 +145,48 @@ export class CryptogramGateway
 
     async ChangeStatusContactRequest(userId: string) {
         this.SendSignal(userId, 'changeStatusContactRequest');
+    }
+
+    // Обработка сигнала "offer" от клиента
+    @SubscribeMessage('signal')
+    async handleSignal(
+        client: Socket,
+        data: {
+            type: string;
+            offer?: any;
+            answer?: any;
+            candidate?: RTCIceCandidate;
+            to: string;
+        },
+    ) {
+        console.log('СИГНАЛ ЗВОНКА: ' + data);
+        const { type, offer, answer, candidate, to } = data;
+
+        // Отправка предложения (offer)
+        if (type === 'offer') {
+            this.SendSignal(to, 'signal', {
+                type: 'offer',
+                offer: offer,
+                from: client.id,
+            });
+        }
+
+        // Отправка ответа (answer)
+        if (type === 'answer') {
+            this.SendSignal(to, 'signal', {
+                type: 'answer',
+                answer: answer,
+                from: client.id,
+            });
+        }
+
+        // Отправка ICE-кандидата
+        if (type === 'candidate') {
+            this.SendSignal(to, 'signal', {
+                type: 'candidate',
+                candidate: candidate,
+                from: client.id,
+            });
+        }
     }
 }
